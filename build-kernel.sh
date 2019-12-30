@@ -13,6 +13,7 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
+LINUX_VER=5.5-rc4
 
 LINUX_LOCAL="orig-linux"
 LINUX_GIT=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git

@@ -51,7 +51,7 @@ for packaged in "${NEEDED[@]}"; do
 	}
 done
 
-EXTRA_PACKAGES="u-boot-tools,device-tree-compiler,xz-utils,gzip,hdparm,smartmontools,net-tools,fdisk,parted,ethtool,less,vim,net-tools,openssh-server,locales,console-common,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,parted,gdisk,curl,vim,nano,aptitude,file,bzip2,debian-ports-archive-keyring,wget,iperf3,htop,telnet,screen,netcat"
+EXTRA_PACKAGES="u-boot-tools,device-tree-compiler,xz-utils,gzip,hdparm,smartmontools,net-tools,fdisk,parted,ethtool,less,vim,net-tools,openssh-server,locales,console-common,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,parted,gdisk,curl,vim,nano,aptitude,file,bzip2,debian-ports-archive-keyring,wget,iperf3,htop,telnet,screen,netcat,initramfs-tools"
 
 DTS_DIR=dts
 LINUX_DIR=linux
@@ -283,7 +283,7 @@ INSTALLEOF
 chmod a+x "$TARGET/tmp/install-script.sh"
 LANG=C /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
 
-dd if=/dev/zero of=$TARGET/tmp/file || echo ""
+dd if=/dev/zero of=$TARGET/tmp/file 2>/dev/null || echo ""
 rm -f $TARGET/tmp/file
 
 sleep 2

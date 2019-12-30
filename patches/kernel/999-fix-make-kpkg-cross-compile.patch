@@ -9,18 +9,26 @@ may-sync-config=0
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/Makefile b/Makefile
-index b183f68d17fe..637da544dafa 100644
+index b99d95df8075..0072b81336be 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -237,7 +237,7 @@ no-sync-config-targets := $(no-dot-config-targets) install %install \
- config-targets  := 0
- mixed-targets   := 0
- dot-config      := 1
--may-sync-config := 1
-+may-sync-config := 0
+@@ -262,7 +262,7 @@ single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
+ config-build	:=
+ mixed-build	:=
+ need-config	:= 1
+-may-sync-config	:= 1
++may-sync-config	:= 0
+ single-build	:=
  
  ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
- 	ifeq ($(filter-out $(no-dot-config-targets), $(MAKECMDGOALS)),)
--- 
-2.20.1
-
+@@ -674,8 +674,8 @@ $(KCONFIG_CONFIG):
+ #
+ # This exploits the 'multi-target pattern rule' trick.
+ # The syncconfig should be executed only once to make all the targets.
+-%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
+-	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
++#%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
++	# $(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
+ else # !may-sync-config
+ # External modules and some install targets need include/generated/autoconf.h
+ # and include/config/auto.conf but do not care if they are up-to-date.
