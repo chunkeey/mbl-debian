@@ -1,0 +1,26 @@
+From 0d9ca835606eb0353f71da9d2b4aa9f16138327b Mon Sep 17 00:00:00 2001
+From: Christian Lamparter <chunkeey@gmail.com>
+Date: Mon, 17 Dec 2018 23:06:34 +0100
+Subject: [PATCH] fix make-kpkg cross-compile
+
+may-sync-config=0
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index b183f68d17fe..637da544dafa 100644
+--- a/Makefile
++++ b/Makefile
+@@ -237,7 +237,7 @@ no-sync-config-targets := $(no-dot-config-targets) install %install \
+ config-targets  := 0
+ mixed-targets   := 0
+ dot-config      := 1
+-may-sync-config := 1
++may-sync-config := 0
+ 
+ ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
+ 	ifeq ($(filter-out $(no-dot-config-targets), $(MAKECMDGOALS)),)
+-- 
+2.20.1
+

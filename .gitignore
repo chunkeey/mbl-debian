@@ -1,0 +1,15 @@
+*.rej
+*.tmp
+*.dtb
+*.deb
+*.img
+*.img.gz
+*.img.xz
+*.orig
+~*
+*.bak
+linux/
+orig-linux/
+mbl-debian/
+*.img
+*.img.*

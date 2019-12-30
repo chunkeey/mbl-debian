@@ -1,0 +1,24 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          first_boot
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# Short-Description: Generates new ssh host keys on first boot & makes swap
+# Description:       Generates new ssh host keys on first boot & makes swap
+### END INIT INFO
+
+# Generate SSH keys & enable SSH
+/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
+/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_dsa_key -t dsa -N ""
+/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+/usr/sbin/service ssh start
+/usr/sbin/update-rc.d ssh defaults
+
+/sbin/mkswap /dev/sda2
+/sbin/swapon /dev/sda2
+
+/usr/sbin/update-rc.d first_boot remove
+rm -f $0

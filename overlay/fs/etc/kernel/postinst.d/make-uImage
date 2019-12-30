@@ -1,0 +1,22 @@
+#!/bin/bash
+
+vmlinux="/boot/vmlinux-$1"
+output="/boot/uImage"
+
+tmpfile=$(/bin/mktemp)
+trap "( rm -f \"$tmpfile\" \"$tmpfile.gz\"; exit 1 )" TERM QUIT
+
+OBJCOPY=/usr/bin/objcopy
+
+$OBJCOPY -O binary -R .reginfo -R .notes -R .note -R .comment \
+	-R .mdebug -R .note.gnu.build-id -S "$vmlinux" "$tmpfile"
+
+/bin/gzip -9 "$tmpfile"
+
+mv -f "$output" "$output-old" || echo "No previous kernel found" >&2
+
+/usr/bin/mkimage -A powerpc -O linux -T kernel -C gzip \
+		 -a 0x00000000 -e 0x00000000 \
+		 -n 'POWERPC MyBook Live Linux' -d "$tmpfile.gz" "$output"
+
+rm -f $tmpfile.gz
