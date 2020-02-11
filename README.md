@@ -18,6 +18,7 @@ Then you have to make sure your package index is up to date `# apt update` befor
 
 ## Usage
 - Just run `sudo ./build.sh`.
+- Due to reasons beyond my control, press and hold "Enter" during the kernel build process.
 - Completed builds output to the project root directory as `Debian-powerpc-unstable-YYYYMMDD-HHMM-GPT.img.gz`
 
 ## Installing

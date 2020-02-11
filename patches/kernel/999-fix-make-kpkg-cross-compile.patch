@@ -4,12 +4,7 @@ Date: Mon, 17 Dec 2018 23:06:34 +0100
 Subject: [PATCH] fix make-kpkg cross-compile
 
 may-sync-config=0
----
- Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Makefile b/Makefile
-index b99d95df8075..0072b81336be 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -262,7 +262,7 @@ single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
@@ -21,14 +16,14 @@ index b99d95df8075..0072b81336be 100644
  single-build	:=
  
  ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
-@@ -674,8 +674,8 @@ $(KCONFIG_CONFIG):
+@@ -673,8 +673,8 @@ $(KCONFIG_CONFIG):
  #
  # This exploits the 'multi-target pattern rule' trick.
  # The syncconfig should be executed only once to make all the targets.
--%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
+-%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
 -	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
-+#%/auto.conf %/auto.conf.cmd %/tristate.conf: $(KCONFIG_CONFIG)
-+	# $(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
++#%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
++#	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
  else # !may-sync-config
  # External modules and some install targets need include/generated/autoconf.h
  # and include/config/auto.conf but do not care if they are up-to-date.
