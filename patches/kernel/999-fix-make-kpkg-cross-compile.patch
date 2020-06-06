@@ -7,7 +7,7 @@ may-sync-config=0
 
 --- a/Makefile
 +++ b/Makefile
-@@ -262,7 +262,7 @@ single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
+@@ -264,7 +264,7 @@ single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.s %.symtypes %/
  config-build	:=
  mixed-build	:=
  need-config	:= 1
@@ -16,10 +16,10 @@ may-sync-config=0
  single-build	:=
  
  ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
-@@ -673,8 +673,8 @@ $(KCONFIG_CONFIG):
- #
+@@ -695,8 +695,8 @@ $(KCONFIG_CONFIG):
  # This exploits the 'multi-target pattern rule' trick.
  # The syncconfig should be executed only once to make all the targets.
+ # (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
 -%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
 -	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
 +#%/auto.conf %/auto.conf.cmd: $(KCONFIG_CONFIG)
