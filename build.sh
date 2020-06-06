@@ -40,7 +40,7 @@ declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU_STATIC qemu-user-stati
 	"$DEBOOTSTRAP debootstrap" "/usr/bin/git git" "/bin/mount mount"
 	"/sbin/gdisk gdisk" "/sbin/fdisk fdisk" "/usr/sbin/chroot coreutils"
 	"/sbin/mkswap util-linux" "/usr/bin/make-kpkg kernel-package"
-	"/usr/bin/powerpc-linux-gnu-gcc c-compiler-powerpc-linux-gnu"
+	"/usr/bin/powerpc-linux-gnu-gcc gcc-powerpc-linux-gnu"
 	"/usr/bin/powerpc-linux-gnu-ld binutils-powerpc-linux-gnu")
 
 for packaged in "${NEEDED[@]}"; do
@@ -80,7 +80,7 @@ IMAGESIZE=$(("$BOOTSIZE" + "$SWAPSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
 fallocate -l "$IMAGESIZE" "$IMAGE"
 
-trap "/bin/umount -A -R -l $TARGET || echo unmounted; $KPARTX -d $IMAGE || echo ''; losetup -D; rm -rf $TARGET linux-*.deb" EXIT
+trap "/bin/umount -A -R -l $TARGET || echo unmounted; $KPARTX -d $IMAGE || echo ''; /sbin/losetup -D; rm -rf $TARGET linux-*.deb" EXIT
 
 case "$PARTITION" in
 GPT)
@@ -290,7 +290,7 @@ sleep 2
 
 /bin/umount -A -R -l "$TARGET"
 $KPARTX -d "$IMAGE"
-losetup -D
+/sbin/losetup -D
 
 if [[ "$DO_COMPRESS" ]]; then
 	echo "Compressing Image. This can take a while."
