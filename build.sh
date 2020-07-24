@@ -216,6 +216,8 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 	export LANG=en_US.UTF-8
 	export LC_ALL=en_US.UTF-8
 
+	. /etc/profile
+
 	#apt
 	echo "deb $SOURCE $RELEASE main contrib non-free
 	deb-src $SOURCE $RELEASE main contrib non-free" > /etc/apt/sources.list
@@ -253,8 +255,8 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 
 	echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
 
-	locale-gen
-	echo "root:$ROOT_PASSWORD" | chpasswd
+	/usr/sbin/locale-gen
+	echo "root:$ROOT_PASSWORD" | /usr/sbin/chpasswd
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	sed -i -e 's/KERNEL\!=\"eth\*|/KERNEL\!=\"/' /lib/udev/rules.d/75-persistent-net-generator.rules
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
