@@ -13,7 +13,7 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
-LINUX_VER=v5.7-rc7
+LINUX_VER=v5.8-rc6
 
 LINUX_LOCAL="orig-linux"
 LINUX_GIT=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
@@ -44,7 +44,7 @@ if [[ -d "$OURPATH/patches/kernel/" ]]; then
 	done
 fi
 
-/usr/bin/cpp -nostdinc -x assembler-with-cpp \
+cpp -nostdinc -x assembler-with-cpp \
 		-I "$DTS_DIR" \
 		-I "$LINUX_DIR/include/" \
 		-undef -D__DTS__ "$DTS_MBL" -o "$DTB_MBL.tmp"
