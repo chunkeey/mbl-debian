@@ -52,6 +52,7 @@ cpp -nostdinc -x assembler-with-cpp \
 dtc -O dtb -i "$DTS_DIR" -S 65536 -o "$DTB_MBL" "$DTB_MBL.tmp"
 
 #(cd $LINUX_DIR; make ARCH="$ARCH" syncconfig;
-#make-kpkg kernel-image kernel-debug build kernel-headers kernel-source --revision 1.00 --arch=powerpc --cross-compile powerpc-linux-gnu- )
+#make-kpkg kernel-source kernel-headers kernel-image kernel-debug --revision 1.00 --arch=powerpc --cross-compile powerpc-linux-gnu- )
+#make-kpkg kernel-image --revision 1.00 --arch=powerpc --cross-compile powerpc-linux-gnu- )
 #
-(cd $LINUX_DIR; make ARCH="$ARCH" syncconfig; make-kpkg kernel-image kernel-debug kernel-headers --revision $REV --arch="$ARCH" --cross-compile powerpc-linux-gnu- -j$PARALLEL )
+(cd $LINUX_DIR; make ARCH="$ARCH" syncconfig; make deb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j$PARALLEL )

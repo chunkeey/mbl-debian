@@ -37,9 +37,9 @@ echo "Building Image '$IMAGE'"
 # Test if all the required tool are installed
 declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU_STATIC qemu-user-static" "$MKIMAGE u-boot-tools"
 	"$DTC device-tree-compiler" "$KPARTX kpartx" "$PARTPROBE parted"
-	"$DEBOOTSTRAP debootstrap" "/usr/bin/git git" "/bin/mount mount"
+	"$DEBOOTSTRAP debootstrap" "/usr/bin/git git" "/bin/mount mount" "/usr/bin/rsync rsync"
 	"/sbin/gdisk gdisk" "/sbin/fdisk fdisk" "/usr/sbin/chroot coreutils"
-	"/sbin/mkswap util-linux" "/usr/bin/make-kpkg kernel-package"
+	"/sbin/mkswap util-linux"
 	"/usr/bin/powerpc-linux-gnu-gcc gcc-powerpc-linux-gnu"
 	"/usr/bin/powerpc-linux-gnu-ld binutils-powerpc-linux-gnu")
 
