@@ -1,59 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-only
 /*
  * Copyright 2008 DENX Software Engineering, Stefan Roese <sr@denx.de>
  * (c) Copyright 2010 Western Digital Technologies, Inc. All Rights Reserved.
- *
- * This file is licensed under the terms of the GNU General Public
- * License version 2.  This program is licensed "as is" without
- * any warranty of any kind, whether express or implied.
  */
 
 /dts-v1/;
 
+#include <dt-bindings/leds/common.h>
 #include "apm82181.dtsi"
 
 / {
-	compatible = "wd,mybooklive", "amcc,apollo3g", "apm,bluestone";
+	compatible = "wd,mybooklive";
 	model = "MyBook Live";
 
 	aliases {
 		serial0 = &UART0;
-		led-boot = &status;
-		led-failsafe = &status;
-		led-running = &status;
-		led-upgrade = &status;
 	};
 };
 
 &POB0 {
-	ebc {
-		nor_flash@0,0 {
-			status = "okay";
-			compatible = "amd,s29gl512n", "jedec-probe", "cfi-flash", "mtd-rom";
-			bank-width = <1>;
-			reg = <0x00000000 0x00000000 0x00080000>;
-			#address-cells = <1>;
-			#size-cells = <1>;
-
-			partition@0 {
-				/* Part of bootrom - Don't use it without a jump */
-				label = "free";
-				reg = <0x00000000 0x0001e000>;
-			};
-
-			partition@1e000 {
-				label = "env";
-				reg = <0x0001e000 0x00002000>;
-			};
-
-			partition@20000 {
-				label = "uboot";
-				reg = <0x00020000 0x00050000>;
-			};
-		};
-	};
-
-	GPIO1: gpio1@e0000000 {
-		compatible = "wd,mbl-gpio", "ti,74273";
+	GPIO1: gpio@e0000000 {
+		compatible = "wd,mbl-gpio";
 		reg-names = "dat";
 		reg = <0xe0000000 0x1>;
 		#gpio-cells = <2>;
@@ -77,8 +44,8 @@
 		};
 	};
 
-	GPIO2: gpio2@e0100000 {
-		compatible = "wd,mbl-gpio", "ti,74244";
+	GPIO2: gpio@e0100000 {
+		compatible = "wd,mbl-gpio";
 		reg-names = "dat";
 		reg = <0xe0100000 0x1>;
 		#gpio-cells = <2>;
@@ -89,20 +56,23 @@
 	leds {
 		compatible = "gpio-leds";
 
+		/* There's just one tri-color LED. */
 		failsafe: power-red {
-			label = "mbl:red:power";
+			function = LED_FUNCTION_FAULT;
+			color = <LED_COLOR_ID_RED>;
 			gpios = <&GPIO1 4 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "panic";
 		};
 
-		status: power-green {
-			label = "mbl:green:power";
+		power-green {
+			function = LED_FUNCTION_POWER;
+			color = <LED_COLOR_ID_GREEN>;
 			gpios = <&GPIO1 5 GPIO_ACTIVE_HIGH>;
-			linux,default-trigger = "default-on";
 		};
 
 		power-blue {
-			label = "mbl:blue:power";
+			function = LED_FUNCTION_DISK;
+			color = <LED_COLOR_ID_BLUE>;
 			gpios = <&GPIO1 6 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "disk-activity";
 		};
@@ -110,8 +80,6 @@
 
 	keys {
 		compatible = "gpio-keys-polled";
-		#address-cells = <1>;
-		#size-cells = <0>;
 		poll-interval = <60>;	/* 3 * 20 = 60ms */
 		autorepeat;
 
@@ -149,6 +117,33 @@
 	};
 };
 
+&NOR {
+	status = "okay";
+	compatible = "jedec,spi-nor";
+	bank-width = <1>;
+	reg = <0x00000000 0x00000000 0x00080000>;
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	partition@0 {
+		/* Part of bootrom - Don't use it without a jump */
+		label = "bootrom";
+		reg = <0x00000000 0x0001e000>;
+		read-only;
+	};
+
+	partition@1e000 {
+		label = "env";
+		reg = <0x0001e000 0x00002000>;
+	};
+
+	partition@20000 {
+		label = "uboot";
+		reg = <0x00020000 0x00050000>;
+		read-only;
+	};
+};
+
 &EMAC0 {
 	status = "okay";
 
@@ -172,20 +167,26 @@
 	status = "okay";
 };
 
-&PKA {
-	status = "okay";
-};
-
-&TRNG {
+&HWRNG {
 	status = "okay";
 };
 
 &SATA0 {
 	status = "okay";
+
+	drive0: sata-port@0 {
+		reg = <0>;
+		#thermal-sensor-cells = <0>;
+	};
 };
 
 &SATA1 {
 	status = "okay";
+
+	drive1: sata-port@0 {
+		reg = <0>;
+		#thermal-sensor-cells = <0>;
+	};
 };
 
 &UART0 {

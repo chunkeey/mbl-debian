@@ -1,0 +1,58 @@
+From 3a39f6d6c559097534f8e3dab9f13de610fda9bd Mon Sep 17 00:00:00 2001
+From: Christian Lamparter <chunkeey@gmail.com>
+Date: Sat, 22 Aug 2020 21:35:19 +0200
+Subject: [PATCH] powerpc: apm82181: add WD MyBook Live NAS
+
+This patch adds the device-tree definitions for
+Western Digital MyBook Live NAS devices.
+
+CPU: AMCC PowerPC  APM82181 (PVR=12c41c83) at 800 MHz
+     (PLB=200, OPB=100, EBC=100 MHz)
+     32 kB I-Cache 32 kB D-Cache, 256 kB L2-Cache, 32 kB OnChip Memory
+DRAM:  256 MB (2x NT5TU64M16GG-AC)
+FLASH: 512 kB
+Ethernet: 1xRGMII - 1 Gbit - Broadcom PHY BCM54610
+SATA: 2*SATA (DUO Variant) / 1*SATA (Single Variant)
+USB: 1xUSB2.0 (Only DUO)
+
+Technically, this devicetree file is shared by two, very
+similar devices.
+
+There's the My Book Live and the My Book Live Duo. WD's uboot
+on the device will enable/disable the nodes for the device.
+This device boots from a u-boot on a 512 KiB NOR Flash onto a
+Linux image stored on one of the harddrives.
+
+Ready to go images and install instruction can be found @OpenWrt.org
+
+Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+---
+rfc v1 -> v2:
+	- use new LED naming scheme
+	- dish out read-only; for essential NOR partitions
+	- remove openwrt led-aliases
+	- comment on the location of linux kernel (on the HDD)
+	- overhauled commit message
+v2 -> v3:
+	- "jedec-probe" should be "jedec,spi-nor"
+---
+ arch/powerpc/platforms/44x/ppc44x_simple.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms/44x/ppc44x_simple.c
+index 3dbd8ddd734a..1122702c804a 100644
+--- a/arch/powerpc/platforms/44x/ppc44x_simple.c
++++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
+@@ -59,7 +59,8 @@ static char *board[] __initdata = {
+ 	"amcc,sequoia",
+ 	"amcc,taishan",
+ 	"amcc,yosemite",
+-	"mosaixtech,icon"
++	"mosaixtech,icon",
++	"wd,mybooklive",
+ };
+ 
+ static int __init ppc44x_probe(void)
+-- 
+2.28.0
+

@@ -1,36 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
 /*
- * Device Tree for Bluestone (APM821xx) board.
+ * Device Tree template include for various APM82181 boards.
+ *
+ * The SoC is an evolution of the PPC460EX predecessor.
+ * This is why dt-nodes from the canyonlands EBC, OPB, USB,
+ * DMA, SATA, EMAC, ... ended up in here.
  *
  * Copyright (c) 2010, Applied Micro Circuits Corporation
- * Author: Tirumala R Marri <tmarri@apm.com>
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111-1307 USA
- *
+ * Author: Tirumala R Marri <tmarri@apm.com>,
+ *	   Christian Lamparter <chunkeey@gmail.com>,
+ *	   Chris Blake <chrisrblake93@gmail.com>
  */
 
+#include <dt-bindings/dma/dw-dmac.h>
 #include <dt-bindings/input/input.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/gpio/gpio.h>
-#include <dt-bindings/dma/dw-dmac.h>
 
 / {
 	#address-cells = <2>;
 	#size-cells = <1>;
 	dcr-parent = <&{/cpus/cpu@0}>;
-	compatible = "apm,bluestone";
 
 	aliases {
 		ethernet0 = &EMAC0; /* needed for BSP u-boot */
@@ -40,7 +30,7 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		CPU00: cpu@0 {
+		CPU0: cpu@0 {
 			device_type = "cpu";
 			model = "PowerPC,apm82181";
 			reg = <0x00000000>;
@@ -110,8 +100,8 @@
 		interrupt-parent = <&UIC0>;
 	};
 
-	OCM1: ocm@400040000 {
-		compatible = "apm,ocm-apm82181", "ibm,ocm";
+	OCM: ocm@400040000 {
+		compatible = "ibm,ocm";
 		status = "okay";
 		cell-index = <1>;
 		/* configured in U-Boot */
@@ -119,12 +109,12 @@
 	};
 
 	SDR0: sdr {
-		compatible = "apm,sdr-apm82181", "ibm,sdr-460ex";
+		compatible = "apm,sdr-apm821xx";
 		dcr-reg = <0x00e 0x002>;
 	};
 
 	CPR0: cpr {
-		compatible = "apm,cpr-apm82181", "ibm,cpr-460ex";
+		compatible = "apm,cpr-apm821xx";
 		dcr-reg = <0x00c 0x002>;
 	};
 
@@ -135,26 +125,20 @@
 		cache-line-size = <32>;
 		cache-size = <262144>;
 		interrupt-parent = <&UIC1>;
-		interrupts = <0x0b IRQ_TYPE_EDGE_RISING>;
+		interrupts = <0xb IRQ_TYPE_EDGE_RISING>;
 	};
 
 	CPM0: cpm {
-		compatible = "ibm,cpm-apm821xx", "ibm,cpm";
-		cell-index = <0>;
+		compatible = "ibm,cpm";
+		dcr-access-method = "native";
 		dcr-reg = <0x160 0x003>;
-		pm-cpu = <0x02000000>;
-		pm-doze = <0x302570F0>;
-		pm-nap = <0x302570F0>;
-		pm-deepsleep = <0x302570F0>;
-		pm-iic-device = <&IIC0>;
-		pm-emac-device = <&EMAC0>;
 		unused-units = <0x00000100>;
 		idle-doze = <0x02000000>;
 		standby = <0xfeff791d>;
 	};
 
 	plb {
-		compatible = "apm,plb-apm82181", "ibm,plb-460ex", "ibm,plb4";
+		compatible = "simple-bus"; /* PLB4 - Part of IBM's CoreConnect concept */
 		#address-cells = <2>;
 		#size-cells = <1>;
 		ranges; /* Filled in by U-Boot */
@@ -165,28 +149,12 @@
 			dcr-reg = <0x010 0x002>;
 		};
 
-		RTC: rtc {
-			compatible = "ibm,rtc";
-			dcr-reg = <0x240 0x009>;
-			interrupts = <0x1a IRQ_TYPE_LEVEL_HIGH>;
-			interrupt-parent = <&UIC2>;
-
-		};
-
-		TRNG: trng@110000 {
-			compatible = "amcc,ppc460ex-rng", "ppc4xx-rng", "amcc, ppc4xx-trng";
+		HWRNG: trng@110000 {
+			compatible = "amcc,ppc460ex-rng", "ppc4xx-rng";
 			reg = <4 0x00110000 0x100>;
 			interrupt-parent = <&UIC1>;
 			interrupts = <0x03 IRQ_TYPE_LEVEL_HIGH>;
-			status = "disabled";
-		};
-
-		PKA: pka@114000 {
-			compatible = "ppc4xx-pka", "amcc,ppc4xx-pka", "amcc, ppc4xx-pka";
-			reg = <4 0x00114000 0x4000>;
-			interrupt-parent = <&UIC0>;
-			interrupts = <0x14 IRQ_TYPE_EDGE_RISING>;
-			status = "disabled";
+			status = "disabled"; /* hardware option */
 		};
 
 		CRYPTO: crypto@180000 {
@@ -222,14 +190,14 @@
 		};
 
 		POB0: opb {
-			compatible = "ibm,opb-460ex", "ibm,opb";
+			compatible = "simple-bus"; /* on-chip peripheral bus */
 			#address-cells = <1>;
 			#size-cells = <1>;
 			ranges = <0xb0000000 0x00000004 0xb0000000 0x50000000>;
 			clock-frequency = <0>; /* Filled in by U-Boot */
 
 			EBC0: ebc {
-				compatible = "ibm,ebc-460ex", "ibm,ebc";
+				compatible = "simple-bus"; /* external bus controller */
 				dcr-reg = <0x012 0x002>;
 				#address-cells = <2>;
 				#size-cells = <1>;
@@ -239,7 +207,7 @@
 				interrupts = <0x06 IRQ_TYPE_LEVEL_HIGH>;
 				interrupt-parent = <&UIC1>;
 
-				nor_flash@0,0 {
+				NOR: nor_flash@0,0 {
 					compatible = "cfi-flash";
 					bank-width = <1>;
 					reg = <0x00000000 0x00000000 0x00100000>;
@@ -248,13 +216,11 @@
 					status = "disabled";
 				};
 
-				ndfc@1,0 {
+				NAND: ndfc@1,0 {
 					compatible = "ibm,ndfc";
 					reg = <00000003 00000000 00002000>;
 					ccr = <0x00001000>;
 					bank-settings = <0x80002222>;
-					#address-cells = <1>;
-					#size-cells = <1>;
 					status = "disabled";
 
 					nand {
@@ -294,7 +260,7 @@
 			};
 
 			IIC0: i2c@ef600700 {
-				compatible = "ibm,iic-460ex", "ibm,iic";
+				compatible = "ibm,iic";
 				reg = <0xef600700 0x00000014>;
 				interrupt-parent = <&UIC0>;
 				interrupts = <0x02 IRQ_TYPE_LEVEL_HIGH>;
@@ -304,10 +270,12 @@
 			};
 
 			IIC1: i2c@ef600800 {
-				compatible = "ibm,iic-460ex", "ibm,iic";
+				compatible = "ibm,iic";
 				reg = <0xef600800 0x00000014>;
 				interrupt-parent = <&UIC0>;
 				interrupts = <0x03 IRQ_TYPE_LEVEL_HIGH>;
+				#address-cells = <1>;
+				#size-cells = <0>;
 				status = "disabled";
 			};
 
@@ -323,7 +291,7 @@
 				device_type = "network";
 				compatible = "ibm,emac-apm821xx", "ibm,emac4sync";
 				interrupt-parent = <&EMAC0>;
-				interrupts = <0 1>;
+				interrupts = <0x0 0x1>;
 				#interrupt-cells = <1>;
 				#address-cells = <0>;
 				#size-cells = <0>;
@@ -352,12 +320,12 @@
 			};
 
 			TAH0: emac-tah@ef601350 {
-				compatible = "ibm,tah-460ex", "ibm,tah";
+				compatible = "ibm,tah";
 				reg = <0xef601350 0x00000030>;
 			};
 
 			RGMII0: emac-rgmii@ef601500 {
-				compatible = "ibm,rgmii-405ex", "ibm,rgmii";
+				compatible = "ibm,rgmii";
 				reg = <0xef601500 0x00000008>;
 				has-mdio;
 			};
@@ -395,7 +363,9 @@
 			chan_allocation_order = <1>;
 			chan_priority = <1>;
 
-			snps,dma-protection-control = <3>;
+			snps,dma-protection-control =
+				<(DW_DMAC_HPROT1_PRIVILEGED_MODE |
+				  DW_DMAC_HPROT2_BUFFERABLE)>;
 			is_memcpy;
 		};
 
@@ -407,6 +377,8 @@
 			dmas = <&AHBDMA0 0 0 1>;
 			dma-names = "sata-dma";
 			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
 		};
 
 		SATA1: sata@bffd1800 {
@@ -417,6 +389,8 @@
 			dmas = <&AHBDMA0 1 0 2>;
 			dma-names = "sata-dma";
 			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
 		};
 
 		MSI: ppc4xx-msi@c10000000 {
@@ -444,7 +418,7 @@
 			status = "disabled";
 		};
 
-		PCIE0: pciex@d00000000 {
+		PCIE0: pcie@d00000000 {
 			device_type = "pci"; /* see ppc4xx_pci_find_bridge */
 			#interrupt-cells = <1>;
 			#size-cells = <2>;
@@ -457,7 +431,8 @@
 			dcr-reg = <0x100 0x020>;
 			sdr-base = <0x300>;
 
-			/* Outbound ranges, one memory and one IO,
+			/*
+			 * Outbound ranges, one memory and one IO,
 			 * later cannot be changed
 			 */
 			ranges = <0x02000000 0x00000000 0x80000000 0x0000000e 0x00000000 0x00000000 0x80000000>,
@@ -470,7 +445,8 @@
 			/* This drives busses 0x40 to 0x7f */
 			bus-range = <0x40 0x7f>;
 
-			/* Legacy interrupts (note the weird polarity, the bridge seems
+			/*
+			 * Legacy interrupts (note the weird polarity, the bridge seems
 			 * to invert PCIe legacy interrupts).
 			 * We are de-swizzling here because the numbers are actually for
 			 * port of the root complex virtual P2P bridge. But I want
