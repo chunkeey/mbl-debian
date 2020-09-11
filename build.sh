@@ -219,8 +219,10 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 	. /etc/profile
 
 	#apt
-	echo "deb $SOURCE $RELEASE main contrib non-free
-	deb-src $SOURCE $RELEASE main contrib non-free" > /etc/apt/sources.list
+	cat <<-SOURCESEOF > /etc/apt/sources.list
+	deb $SOURCE $RELEASE main contrib non-free
+	deb-src $SOURCE $RELEASE main contrib non-free
+	SOURCESEOF
 
 	# fstab
 	cat <<-FSTABEOF > /etc/fstab
@@ -236,7 +238,7 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 
 	# Networking
 	cat <<-NETOF > /etc/network/interfaces
-		auto lo eth0
+		auto lo
 
 		iface lo inet loopback
 
@@ -263,7 +265,7 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 	sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 
 	# install kernel image (mostly for the modules)
-	dpkg -i /tmp/linux-image*deb /tmp/linux-headers*deb
+	dpkg -i /tmp/linux-*deb
 
 	update-rc.d first_boot defaults
 	update-rc.d first_boot enable
