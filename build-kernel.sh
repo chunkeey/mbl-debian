@@ -15,7 +15,8 @@ DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
 LINUX_VER=v5.8
 
-LINUX_LOCAL="orig-linux"
+# This "cached-linux" serves as a local cache for a unmodified linux.git
+LINUX_LOCAL="cached-linux"
 LINUX_GIT=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 
 OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -23,7 +24,7 @@ OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 rm -rf "$LINUX_DIR"
 
 if [[ -d "$LINUX_LOCAL" ]]; then
-	git clone -l "$LINUX_LOCAL" "$LINUX_DIR"
+	git clone --local "$LINUX_LOCAL" "$LINUX_DIR"
 else
 	git clone "$LINUX_GIT" "$LINUX_DIR"
 fi

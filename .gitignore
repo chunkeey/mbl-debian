@@ -9,7 +9,7 @@
 ~*
 *.bak
 linux/
-orig-linux/
+cached-linux/
 mbl-debian/
 *.img
 *.img.*
