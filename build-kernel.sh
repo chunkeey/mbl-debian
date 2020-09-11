@@ -50,7 +50,8 @@ cpp -nostdinc -x assembler-with-cpp \
 		-I "$LINUX_DIR/include/" \
 		-undef -D__DTS__ "$DTS_MBL" -o "$DTB_MBL.tmp"
 
-dtc -O dtb -i "$DTS_DIR" -S 65536 -o "$DTB_MBL" "$DTB_MBL.tmp"
+# The DTB needs to be enlarged as u-boot needs the extra size for adding ranges and frequency properties
+dtc -O dtb -i "$DTS_DIR" -S 32768 -o "$DTB_MBL" "$DTB_MBL.tmp"
 
 #(cd $LINUX_DIR; make ARCH="$ARCH" syncconfig;
 #make-kpkg kernel-source kernel-headers kernel-image kernel-debug --revision 1.00 --arch=powerpc --cross-compile powerpc-linux-gnu- )
