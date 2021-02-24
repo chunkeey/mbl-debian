@@ -51,7 +51,7 @@ for packaged in "${NEEDED[@]}"; do
 	}
 done
 
-EXTRA_PACKAGES="u-boot-tools,device-tree-compiler,xz-utils,gzip,hdparm,smartmontools,net-tools,fdisk,parted,ethtool,less,vim,net-tools,openssh-server,locales,console-common,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,parted,gdisk,curl,vim,nano,aptitude,file,bzip2,debian-ports-archive-keyring,wget,iperf3,htop,telnet,screen,netcat,initramfs-tools"
+EXTRA_PACKAGES="u-boot-tools,device-tree-compiler,xz-utils,gzip,hdparm,smartmontools,net-tools,fdisk,parted,ethtool,less,vim,net-tools,openssh-server,locales,console-common,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,parted,gdisk,curl,vim,nano,aptitude,file,bzip2,debian-ports-archive-keyring,wget,iperf3,htop,telnet,screen,netcat,initramfs-tools,cockpit"
 
 DTS_DIR=dts
 LINUX_DIR=linux
