@@ -51,7 +51,11 @@ for packaged in "${NEEDED[@]}"; do
 	}
 done
 
-EXTRA_PACKAGES="u-boot-tools,device-tree-compiler,xz-utils,gzip,hdparm,smartmontools,net-tools,fdisk,parted,ethtool,less,vim,net-tools,openssh-server,locales,console-common,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,parted,gdisk,curl,vim,nano,aptitude,file,bzip2,debian-ports-archive-keyring,wget,iperf3,htop,telnet,screen,netcat,initramfs-tools,cockpit,samba"
+EXTRA_PACKAGES="less,gzip,bzip2,vim,console-common,locales,nano,aptitude,file,screen,initramfs-tools,htop,xz-utils,\
+	        u-boot-tools,device-tree-compiler,\
+	        ethtool,net-tools,openssh-server,wget,iperf3,curl,telnet,netcat,samba,\
+	        hdparm,smartmontools,fdisk,gdisk,parted,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,\
+	        dbus,dbus-user-session,cockpit" \
 
 DTS_DIR=dts
 LINUX_DIR=linux
@@ -268,6 +272,9 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 
 	update-rc.d first_boot defaults
 	update-rc.d first_boot enable
+
+	# Try fix bad packages
+	apt install -f
 
 	# cleanup
 	apt clean
