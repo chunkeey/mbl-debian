@@ -51,11 +51,31 @@ for packaged in "${NEEDED[@]}"; do
 	}
 done
 
-EXTRA_PACKAGES="less,gzip,bzip2,vim,console-common,locales,nano,aptitude,file,screen,initramfs-tools,htop,xz-utils,\
-	        u-boot-tools,device-tree-compiler,\
-	        ethtool,net-tools,openssh-server,wget,iperf3,curl,telnet,netcat,samba,\
-	        hdparm,smartmontools,fdisk,gdisk,parted,binutils,ca-certificates,e2fsprogs,mdadm,dmsetup,cryptsetup,\
-	        dbus,dbus-user-session,cockpit" \
+# Packages that are installed by debbootstrap - please note that
+# debootstrap package dependency isn't great...
+# Don't use tabs to align the entries! Debootstrap will choke and
+# complain about missing "strange number" dependencies.
+#
+# Some of these packages could be moved to INSTALL_PACKAGES,
+# others like binutils,gzip,u-boot-tools are necessary for
+# scripts that run before we can apt install packages...
+#
+DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
+        bzip2,locales,aptitude,file,xz-utils,initramfs-tools,\
+        console-common,console-setup,console-setup-linux,\
+        keyboard-configuration,net-tools,openssh-server,wget,netcat,curl,\
+        ca-certificates,debian-archive-keyring,debian-ports-archive-keyring,\
+        fdisk,gdisk,parted,e2fsprogs,mdadm,dmsetup"
+
+# That's why the heavy lifting should be done by apt that will be run in the chroot
+APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
+	openssl smartmontools hdparm smartmontools cryptsetup \
+	nfs-common nfs-kernel-server portmap samba rsync telnet \
+	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
+	bcache-tools duperemove fuse thin-provisioning-tools \
+	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
+	cockpit cockpit-packagekit cockpit-networkmanager \
+	cockpit-storaged cockpit-pcp watchdog lm-sensors"
 
 DTS_DIR=dts
 LINUX_DIR=linux
@@ -197,23 +217,23 @@ BOOTSCRIPTEOF
 
 # debootstap
 
-$DEBOOTSTRAP --no-check-gpg --foreign --include="$EXTRA_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
+$DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
 
 mkdir -p "$TARGET/usr/bin"
 /bin/cp "$QEMU_STATIC" "$TARGET"/usr/bin/
 
-LANG=C /usr/sbin/chroot "$TARGET" /debootstrap/debootstrap --second-stage
+LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /debootstrap/debootstrap --second-stage
 
 if [ -d $OURPATH/overlay/fs ]; then
 	echo "Applying fs overlay"
 	cp -vR $OURPATH/overlay/fs/* "$TARGET"
 fi
 
-mv linux-*.deb $TARGET/tmp
+mv linux-*.deb "$TARGET/tmp"
 
-mkdir -p $TARGET/dev/mapper
+mkdir -p "$TARGET/dev/mapper"
 
-cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
+cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	#!/bin/bash
 
 	export LANGUAGE=en_US.UTF-8
@@ -263,9 +283,21 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 
 	/usr/sbin/locale-gen
 	echo "root:$ROOT_PASSWORD" | /usr/sbin/chpasswd
+	/usr/bin/passwd -e root
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
-	sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
+
+	# If a root-keyfile is already in place. Don't change the SSH Default password setting for root
+	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
+
+	mkdir -p /etc/systemd/system/cockpit.socket.d/
+	cat <<-CPLISTEN > /etc/systemd/system/cockpit.socket.d/listen.conf
+	[Socket]
+	ListenStream=
+	ListenStream=80
+	ListenStream=443
+	ListenStream=9090
+	CPLISTEN
 
 	# install kernel image (mostly for the modules)
 	dpkg -i /tmp/linux-*deb
@@ -273,8 +305,13 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 	update-rc.d first_boot defaults
 	update-rc.d first_boot enable
 
-	# Try fix bad packages
-	apt install -f
+	# First, try to fix bad packages dependencies
+	apt install -f -y
+
+	apt install -y $APT_INSTALL_PACKAGES
+
+	# We don't use initramfs, drop it if possible
+	apt remove -y initramfs-tools
 
 	# cleanup
 	apt clean
@@ -291,7 +328,7 @@ cat <<-INSTALLEOF > $TARGET/tmp/install-script.sh
 INSTALLEOF
 
 chmod a+x "$TARGET/tmp/install-script.sh"
-LANG=C /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
+LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
 
 dd if=/dev/zero of=$TARGET/tmp/file 2>/dev/null || echo ""
 rm -f $TARGET/tmp/file

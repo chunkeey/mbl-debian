@@ -17,6 +17,8 @@
 /usr/sbin/service ssh start
 /usr/sbin/update-rc.d ssh defaults
 
+echo -e "w\nq" | /sbin/fdisk /dev/sda
+
 /sbin/mkswap /dev/sda2
 /sbin/swapon /dev/sda2
 
