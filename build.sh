@@ -2,6 +2,37 @@
 
 # set -xe
 
+OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+RELEASE=unstable
+ROOT_PASSWORD=debian
+DISTRIBUTION=Debian
+PARTITION=GPT
+DATE=$(date +%Y%m%d-%H%M)
+
+ARCH=powerpc
+TARGET=mbl-debian
+SOURCE=http://ftp.ports.debian.org/debian-ports
+
+QEMU_STATIC=/usr/bin/qemu-ppc-static
+MKIMAGE=/usr/bin/mkimage
+DTC=/usr/bin/dtc
+KPARTX=/sbin/kpartx
+PARTPROBE=/sbin/partprobe
+DEBOOTSTRAP=/usr/sbin/debootstrap
+
+DO_COMPRESS=1
+
+# HDD Image
+BOOTSIZE=134217728   # 128 MiB
+SWAPSIZE=939524096   # 768 MiB
+ROOTSIZE=3212836864  # ~ 3GiB
+ROOTPARTUUID=$(uuidgen)
+ROOTUUID=$(uuidgen)
+IMAGESIZE=$(("$BOOTSIZE" + "$SWAPSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
+
+IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE-$PARTITION.img"
+
 die() {
 	(>&2 echo "$@")
 	exit 1
@@ -11,26 +42,6 @@ to_k()
 {
 	echo $(($1 / 1024))"k"
 }
-
-OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-ARCH=powerpc
-RELEASE=unstable
-TARGET=mbl-debian
-DISTRIBUTION=Debian
-PARTITION=GPT
-SOURCE=http://ftp.ports.debian.org/debian-ports
-
-QEMU_STATIC=/usr/bin/qemu-ppc-static
-MKIMAGE=/usr/bin/mkimage
-DTC=/usr/bin/dtc
-KPARTX=/sbin/kpartx
-PARTPROBE=/sbin/partprobe
-DEBOOTSTRAP=/usr/sbin/debootstrap
-ROOT_PASSWORD=debian
-DATE=$(date +%Y%m%d-%H%M)
-
-IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE-$PARTITION.img"
 
 echo "Building Image '$IMAGE'"
 
@@ -90,17 +101,6 @@ LINUX_DIR=linux
 }
 /sbin/losetup -D
 rm -rf "$TARGET" "$IMAGE"
-
-DO_COMPRESS=1
-
-# HDD Image
-
-BOOTSIZE=134217728   # 128 MiB
-SWAPSIZE=939524096   # 768 MiB
-ROOTSIZE=3212836864  # ~ 3GiB
-ROOTPARTUUID=$(uuidgen)
-ROOTUUID=$(uuidgen)
-IMAGESIZE=$(("$BOOTSIZE" + "$SWAPSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
 fallocate -l "$IMAGESIZE" "$IMAGE"
 
