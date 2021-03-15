@@ -7,7 +7,6 @@ OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 RELEASE=unstable
 ROOT_PASSWORD=debian
 DISTRIBUTION=Debian
-PARTITION=GPT
 DATE=$(date +%Y%m%d-%H%M)
 
 ARCH=powerpc
@@ -25,13 +24,14 @@ DO_COMPRESS=1
 
 # HDD Image
 BOOTSIZE=134217728   # 128 MiB
-SWAPSIZE=939524096   # 768 MiB
-ROOTSIZE=3212836864  # ~ 3GiB
+ROOTSIZE=4152360960  # ~ 4GiB
+SWAPFILESIZE=768     # in MiB
+BOOTUUID=$(uuidgen)
 ROOTPARTUUID=$(uuidgen)
 ROOTUUID=$(uuidgen)
-IMAGESIZE=$(("$BOOTSIZE" + "$SWAPSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
+IMAGESIZE=$(("$BOOTSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
-IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE-$PARTITION.img"
+IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
 
 die() {
 	(>&2 echo "$@")
@@ -86,7 +86,7 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	bcache-tools duperemove fuse thin-provisioning-tools \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
 	cockpit cockpit-packagekit cockpit-networkmanager \
-	cockpit-storaged cockpit-pcp watchdog lm-sensors"
+	cockpit-storaged cockpit-pcp watchdog lm-sensors uuid-runtime"
 
 DTS_DIR=dts
 LINUX_DIR=linux
@@ -106,69 +106,29 @@ fallocate -l "$IMAGESIZE" "$IMAGE"
 
 trap "/bin/umount -A -R -l $TARGET || echo unmounted; $KPARTX -d $IMAGE || echo ''; /sbin/losetup -D; rm -rf $TARGET linux-*.deb" EXIT
 
-case "$PARTITION" in
-GPT)
-	/sbin/gdisk "$IMAGE" <<-GPTEOF
-		o
-		y
-		n
-		p
-		1
+/sbin/gdisk "$IMAGE" <<-GPTEOF
+	o
+	y
+	n
+	p
+	1
 
-		+$(to_k $BOOTSIZE)
+	+$(to_k $BOOTSIZE)
 
-		n
-		p
-		2
+	n
+	p
+	2
 
-		+$(to_k $SWAPSIZE)
-		8200
-		n
-		p
-		3
+	+$(to_k $ROOTSIZE)
 
-		+$(to_k $ROOTSIZE)
-
-		x
-		c
-		3
-		$ROOTPARTUUID
-		m
-		w
-		y
-	GPTEOF
-	;;
-
-MBR)
-	die "Broken due do UUID-boot"
-	/sbin/fdisk "$IMAGE" <<-MBREOF
-		o
-		n
-		p
-		1
-
-		+$(to_k $BOOTSIZE)
-		n
-		p
-		2
-
-		+$(to_k $SWAPSIZE)
-		t
-		2
-		82
-		n
-		p
-		3
-
-		+$(to_k $ROOTSIZE)
-		w
-	MBREOF
-	;;
-*)
-	die "Unsupported Partition Format $PARTITION"
-	;;
-esac
-
+	x
+	c
+	2
+	$ROOTPARTUUID
+	m
+	w
+	y
+GPTEOF
 
 DEVICE=$(/sbin/losetup -f --show "$IMAGE")
 
@@ -179,25 +139,34 @@ sleep 1
 
 DEVICE="/dev/mapper/${DEVICE}"
 BOOTP=${DEVICE}p1
-SWAPP=${DEVICE}p2
-ROOTP=${DEVICE}p3
+ROOTP=${DEVICE}p2
 
 # Kernel build
 ./build-kernel.sh
 
 # Make filesystems
 
-# revision 1 - needed for u-boot ext2load
-/sbin/mkfs.ext2 "$BOOTP" -O filetype -L BOOT -m 0
+# Boot ext2 Filesystem - revision 1 is needed because of u-boot ext2load
+/sbin/mkfs.ext2 "$BOOTP" -O filetype -L BOOT -m 0 -U $BOOTUUID -b 1024
+# Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
+/sbin/resize2fs "$BOOTP" $(( $BOOTSIZE / 1024 - 128 ))
 
-/sbin/mkfs.ext4 "$ROOTP" -L root -U $ROOTUUID
+# Root Filesystem - ext4 is specified in rootfstype= kernel cmdline
+/sbin/mkfs.ext4 "$ROOTP" -L root -U $ROOTUUID -b 4096
+# Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
+/sbin/resize2fs "$ROOTP" $(( $ROOTSIZE / 4096 - 32 ))
+
 mkdir -p "$TARGET"
 
-/bin/mount "$ROOTP" "$TARGET" -t ext4
+mount "$ROOTP" "$TARGET" -t ext4
+
+# create swapfile - it's still up to debate whenever fallocate or dd is better
+dd if=/dev/zero of="$TARGET/.swapfile" bs=1M count="$SWAPFILESIZE"
+chmod 0600 "$TARGET/.swapfile"
 
 #prepare boot
 mkdir -p "$TARGET/boot"
-/bin/mount "$BOOTP" "$TARGET/boot" -t ext2
+mount "$BOOTP" "$TARGET/boot" -t ext2
 mkdir -p "$TARGET/boot/boot"
 cp dts/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
 cp dts/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
@@ -220,7 +189,7 @@ BOOTSCRIPTEOF
 $DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
 
 mkdir -p "$TARGET/usr/bin"
-/bin/cp "$QEMU_STATIC" "$TARGET"/usr/bin/
+cp "$QEMU_STATIC" "$TARGET"/usr/bin/
 
 LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /debootstrap/debootstrap --second-stage
 
@@ -252,9 +221,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	cat <<-FSTABEOF > /etc/fstab
 		# <file system>	<mount point>	<type>	<options>			<dump>	<pass>
 		UUID=$ROOTUUID	/		ext4	defaults			0	1
+		UUID=$BOOTUUID	/boot		ext2	defaults,sync,nosuid,noexec	0	2
 		proc		/proc		proc	defaults			0	0
-		/dev/sda2	none		swap	sw				0	0
-		/dev/sda1	/boot		ext2	defaults,sync,nosuid,noexec	0	2
 	FSTABEOF
 
 	echo "$TARGET" > etc/hostname

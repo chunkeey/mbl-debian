@@ -10,17 +10,20 @@
 ### END INIT INFO
 
 # Generate SSH keys & enable SSH
-/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
-/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_dsa_key -t dsa -N ""
-/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
-/usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+[ -f /etc/ssh/ssh_host_rsa_key ] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
+[ -f /etc/ssh/ssh_host_ed25519_key] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+[ -f /etc/ssh/ssh_host_ecdsa_key ] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
 /usr/sbin/service ssh start
 /usr/sbin/update-rc.d ssh defaults
 
 echo -e "w\nq" | /sbin/fdisk /dev/sda
 
-/sbin/mkswap /dev/sda2
-/sbin/swapon /dev/sda2
+/sbin/mkswap /.swapfile
+/sbin/swapon /.swapfile
+
+cat << SWAPENTRY >> /etc/fstab
+/.swapfile      none            swap    sw                              0       0
+SWAPENTRY
 
 /usr/sbin/update-rc.d first_boot remove
 rm -f $0
