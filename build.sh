@@ -33,6 +33,14 @@ IMAGESIZE=$(("$BOOTSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
 IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
 
+# Problem here is that the kernel md-autodetect code needs
+# a 0.90 SuperBlock for the rootfs to boot off. The 0.90
+# superblock unfortunatley uses the ARCH's (powerpc =
+# big endian) encoding....
+# But we are building on x86/ARM with little endian so we,
+# can't use the established mdadm to make the RAID.
+MAKE_RAID=
+
 die() {
 	(>&2 echo "$@")
 	exit 1
@@ -76,7 +84,7 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
         console-common,console-setup,console-setup-linux,\
         keyboard-configuration,net-tools,openssh-server,wget,netcat,curl,\
         ca-certificates,debian-archive-keyring,debian-ports-archive-keyring,\
-        fdisk,gdisk,parted,e2fsprogs,mdadm,dmsetup"
+        fdisk,gdisk,parted,e2fsprogs,mdadm,dmsetup,bsdextrautils"
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
@@ -171,8 +179,16 @@ mkdir -p "$TARGET/boot/boot"
 cp dts/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
 cp dts/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
 
+#	setenv bootargs root=PARTUUID=$ROOTPARTUUID rw
+
+if [[ "$MAKE_RAID" ]]; then
+	ROOTBOOT="/dev/md1"
+else
+	ROOTBOOT="PARTUUID=$ROOTPARTUUID"
+fi
+
 cat <<-BOOTSCRIPTEOF > "$TARGET/boot/boot/boot-source.txt"
-	setenv bootargs root=PARTUUID=$ROOTPARTUUID rw
+	setenv bootargs root=$ROOTBOOT rw
 	setenv load_kernel1 'ext2load sata 0:1 \${kernel_addr_r} /uImage || ext2load sata 0:1 \${kernel_addr_r} /uImage-old;'
 	setenv load_dtb1 'ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb-old'
 	setenv load_part1 'run load_kernel1 load_dtb1'
@@ -304,8 +320,35 @@ rm -f $TARGET/tmp/file
 sleep 2
 
 /bin/umount -A -R -l "$TARGET"
+
+[[ $MAKE_RAID ]] && {
+	# super 1.0 is between 8k and 12k
+	dd if=boot-md0-raid1 of="$BOOTP" bs=1K seek=$(( $BOOTSIZE / 1024 - 8 ))
+
+	# super 0.9 is at 64K
+	dd if=root-md1-raid1 of="$ROOTP" bs=1k seek=$(( $ROOTSIZE / 1024 - 64))
+}
+
 $KPARTX -d "$IMAGE"
 /sbin/losetup -D
+
+[[ $MAKE_RAID ]] && {
+	# Do this at the end. This is because if we start with the
+	# FD00 partition type when we are creating the partitions above,
+	# the kernel will try to automount it when partprobe and kpartx
+	# gets invoced... which we don't want.
+
+	/sbin/gdisk "$IMAGE" <<-RAIDEOF
+		t
+		1
+		fd00
+		t
+		2
+		fd00
+		w
+		y
+	RAIDEOF
+}
 
 if [[ "$DO_COMPRESS" ]]; then
 	echo "Compressing Image. This can take a while."
