@@ -27,7 +27,7 @@ There are multiple ways to get the image onto the device.
 ### Write the image onto the HDD by disassembling
 This is the prefered method for the MyBook Live Duo. As it's as easy as opening the drive lid and pulling the HDD out of the enclosure. On the MyBook Live Single, this requires to fully disassemble the device in order to extract the HDD.
 
-Once you have the HDD extracted, connect it to a PC and make a backup of it. After the backup was successfully completed and verified, you can uncompress the image onto the HDD. For example: `# gunzip Debian-powerpc-*-GPT.img.gz -c > /dev/sdX`.
+Once you have the HDD extracted, connect it to a PC and make a backup of it. After the backup was successfully completed and verified, you should zap out the existing GPT+MBR structures `gfdisk /dev/sdX` on that disk (look there in the expert option menu) and then you can uncompress the image onto the HDD. For example: `# gunzip -d -c Debian-powerpc-*-GPT.img.gz > /dev/sdX`... followed up by a `sync` to make sure everything is written to the HDD.
 
 ### Over the SSH-Console
 For this method, you have to gain root access to the MyBook Live via SSH by any means necessary.
