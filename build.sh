@@ -307,6 +307,9 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# the key is shipped with the image and will not be unique
 	rm -f /etc/ssh/ssh_host_*
 
+	# Enable tmpfs on /tmp
+	systemctl enable /usr/share/systemd/tmp.mount
+
 	# Allow for better compression by NULLING all the free space on the drive
 	rm /tmp/install-script.sh
 INSTALLEOF
