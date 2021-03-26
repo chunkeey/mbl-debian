@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -xe
+set -e
 
 ARCH=powerpc
 RELEASE=unstable
@@ -13,7 +13,7 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
-LINUX_VER=v5.12-rc3
+LINUX_VER=v5.12-rc4
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
 LINUX_LOCAL="cached-linux"
