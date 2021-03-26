@@ -25,5 +25,16 @@ cat << SWAPENTRY >> /etc/fstab
 /.swapfile      none            swap    sw                              0       0
 SWAPENTRY
 
+# Spin-down HDDs after 10 Minutes + 15 Seconds
+cat << HDPARMENTRY >> /etc/hdparm.conf
+/dev/sda {
+	spindown_time = 123
+}
+
+/dev/sdb {
+	spindown_time = 123
+}
+HDPARMENTRY
+
 /usr/sbin/update-rc.d first_boot remove
 rm -f $0
