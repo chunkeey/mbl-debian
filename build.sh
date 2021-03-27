@@ -239,6 +239,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 		UUID=$ROOTUUID	/		ext4	defaults			0	1
 		UUID=$BOOTUUID	/boot		ext2	defaults,sync,nosuid,noexec	0	2
 		proc		/proc		proc	defaults			0	0
+		none		/var/log	tmpfs	size=30M,mode=755,gid=0,uid=0	0	0
 	FSTABEOF
 
 	echo "$TARGET" > etc/hostname
