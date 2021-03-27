@@ -190,11 +190,13 @@ fi
 cat <<-BOOTSCRIPTEOF > "$TARGET/boot/boot/boot-source.txt"
 	setenv bootargs root=$ROOTBOOT rw
 	setenv load_kernel1 'ext2load sata 0:1 \${kernel_addr_r} /uImage || ext2load sata 0:1 \${kernel_addr_r} /uImage-old;'
-	setenv load_dtb1 'ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb-old'
-	setenv load_part1 'run load_kernel1 load_dtb1'
+	setenv load_initrd1 'ext2load sata 0:1 \${ramdisk_addr_r} /initrd || ext2load sata 0:1 \${ramdisk_addr_r} /initrd-old;'
+	setenv load_dtb1 'ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb-old;'
+	setenv load_part1 'run load_kernel1 load_initrd1 load_dtb1'
 	setenv load_kernel2 'ext2load sata 1:1 \${kernel_addr_r} /uImage || ext2load sata 1:1 \${kernel_addr_r} /uImage-old;'
-	setenv load_dtb2 'ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb-old'
-	setenv load_part2 'run load_kernel2 load_dtb2'
+	setenv load_initrd2 'ext2load sata 1:1 \${ramdisk_addr_r} /initrd || ext2load sata 1:1 \${ramdisk_addr_r} /initrd-old;'
+	setenv load_dtb2 'ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb-old;'
+	setenv load_part2 'run load_kernel2 load_initrd2 load_dtb2'
 	setenv load_sata 'if run load_part1; then echo Loaded part 1; elif run load_part2; then echo Loaded part 2; fi'
 	setenv boot_sata 'sata init; run load_sata; run addtty; bootm \${kernel_addr_r} - \${fdt_addr_r}'
 	run boot_sata
@@ -294,9 +296,6 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	apt install -f -y
 
 	apt install -y $APT_INSTALL_PACKAGES
-
-	# We don't use initramfs, drop it if possible
-	apt remove -y initramfs-tools
 
 	# cleanup
 	apt clean
