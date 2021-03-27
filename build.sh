@@ -179,28 +179,9 @@ mkdir -p "$TARGET/boot/boot"
 cp dts/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
 cp dts/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
 
-#	setenv bootargs root=PARTUUID=$ROOTPARTUUID rw
+ROOTBOOT="UUID=$ROOTUUID"
 
-if [[ "$MAKE_RAID" ]]; then
-	ROOTBOOT="/dev/md1"
-else
-	ROOTBOOT="PARTUUID=$ROOTPARTUUID"
-fi
-
-cat <<-BOOTSCRIPTEOF > "$TARGET/boot/boot/boot-source.txt"
-	setenv bootargs root=$ROOTBOOT rw
-	setenv load_kernel1 'ext2load sata 0:1 \${kernel_addr_r} /uImage || ext2load sata 0:1 \${kernel_addr_r} /uImage-old;'
-	setenv load_initrd1 'ext2load sata 0:1 \${ramdisk_addr_r} /initrd || ext2load sata 0:1 \${ramdisk_addr_r} /initrd-old;'
-	setenv load_dtb1 'ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb-old;'
-	setenv load_part1 'run load_kernel1 load_initrd1 load_dtb1'
-	setenv load_kernel2 'ext2load sata 1:1 \${kernel_addr_r} /uImage || ext2load sata 1:1 \${kernel_addr_r} /uImage-old;'
-	setenv load_initrd2 'ext2load sata 1:1 \${ramdisk_addr_r} /initrd || ext2load sata 1:1 \${ramdisk_addr_r} /initrd-old;'
-	setenv load_dtb2 'ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb || ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb-old;'
-	setenv load_part2 'run load_kernel2 load_initrd2 load_dtb2'
-	setenv load_sata 'if run load_part1; then echo Loaded part 1; elif run load_part2; then echo Loaded part 2; fi'
-	setenv boot_sata 'sata init; run load_sata; run addtty; bootm \${kernel_addr_r} - \${fdt_addr_r}'
-	run boot_sata
-BOOTSCRIPTEOF
+echo "$ROOTBOOT" > "$TARGET/boot/boot/root-device"
 
 # debootstap
 
@@ -286,6 +267,10 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	ListenStream=9090
 	CPLISTEN
 
+	# Delete "existing" MD arrays... These have been copied from the Host system
+	# They don't belong into this image
+	sed -i '/#\ definitions\ of\ existing\ MD\ arrays/,/^$/d' /etc/mdadm/mdadm.conf
+
 	# install kernel image (mostly for the modules)
 	dpkg -i /tmp/linux-*deb
 
@@ -326,10 +311,10 @@ sleep 2
 
 [[ $MAKE_RAID ]] && {
 	# super 1.0 is between 8k and 12k
-	dd if=boot-md0-raid1 of="$BOOTP" bs=1K seek=$(( $BOOTSIZE / 1024 - 8 ))
+	dd if=boot-md0-raid1 of="$BOOTP" bs=1K seek=$(( $BOOTSIZE / 1024 - 8 )) status=noxfer
 
 	# super 0.9 is at 64K
-	dd if=root-md1-raid1 of="$ROOTP" bs=1k seek=$(( $ROOTSIZE / 1024 - 64))
+	dd if=root-md1-raid1 of="$ROOTP" bs=1k seek=$(( $ROOTSIZE / 1024 - 64)) status=noxfer
 }
 
 $KPARTX -d "$IMAGE"

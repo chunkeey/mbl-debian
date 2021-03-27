@@ -1,9 +1,0 @@
-#!/bin/bash
-
-initrd="/boot/initrd.img-$1"
-output="/boot/initrd"
-
-mv -f "$output" "$output-old" || echo "No previous initrd found" >&2
-
-/usr/bin/mkimage -A powerpc -T ramdisk -C none \
-		 -n 'POWERPC MyBook Live Ramdisk' -d "$initrd" "$output"

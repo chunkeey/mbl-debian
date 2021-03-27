@@ -1,0 +1,47 @@
+#!/bin/bash
+
+version="$1"
+
+# The u-boot is looking for a file "/boot/boot.scr" on the first
+# partition. This partition has to be a special ext2 format.
+# This is all hardcoded.
+
+[[ -f "/boot/uImage-$version" ]] || exit 1
+
+ROOTBOOT=$(cat /boot/boot/root-device)
+
+BOOTSCRIPT=$(mktemp)
+
+cat <<- MAINBOOTSCRIPTEOF > "$BOOTSCRIPT"
+	setenv bootargs root=$ROOTBOOT
+	setenv load_kernel1 'ext2load sata 0:1 \${kernel_addr_r} /uImage-$version'
+	setenv load_initrd1 'ext2load sata 0:1 \${ramdisk_addr_r} /uInitrd-$version'
+	setenv load_dtb1 'ext2load sata 0:1 \${fdt_addr_r} /apollo3g.dtb'
+	setenv load_kernel2 'ext2load sata 1:1 \${kernel_addr_r} /uImage-$version'
+	setenv load_initrd2 'ext2load sata 1:1 \${ramdisk_addr_r} /uInitrd-$version'
+	setenv load_dtb2 'ext2load sata 1:1 \${fdt_addr_r} /apollo3g.dtb'
+	setenv load_sata 'if run load_part1; then echo Loaded part 1; elif run load_part2; then echo Loaded part 2; fi'
+MAINBOOTSCRIPTEOF
+
+if [[ -f "/boot/uInitrd-$version" ]]; then
+	LOAD_INITRD1="load_initrd1 "
+	LOAD_INITRD2="load_initrd2 "
+	RAMDISK="\${ramdisk_addr_r}"
+else
+	RAMDISK="-"
+fi
+
+cat <<- INITRDBOOTSCRIPTEOF >> "$BOOTSCRIPT"
+	setenv load_part1 'run load_kernel1 ${LOAD_INITRD1}load_dtb1'
+	setenv load_part2 'run load_kernel2 ${LOAD_INITRD2}load_dtb2'
+	setenv boot_sata 'sata init; run load_sata; run addtty; bootm \${kernel_addr_r} $RAMDISK \${fdt_addr_r}'
+	run boot_sata
+INITRDBOOTSCRIPTEOF
+
+/usr/bin/mkimage -A powerpc -T script -C none -n "MyBook Live Boot Script" \
+		 -d "$BOOTSCRIPT" "/boot/boot/boot-$version.scr"
+
+mv "/boot/boot/boot.scr" "/boot/boot/boot-old.scr" 2>/dev/null || >&2 echo "No previous boot script existed."
+ln -s "boot-$version.scr" "/boot/boot/boot.scr"
+
+rm -f "$BOOTSCRIPT"

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-/bin/bash /boot/boot/update-bootscript.sh

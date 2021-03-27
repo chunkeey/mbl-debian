@@ -1,0 +1,24 @@
+#!/bin/bash
+
+version="$1"
+
+rm -f "/boot/uImage-$version" "/boot/uInitrd-$version" "/boot/boot/boot-$version.scr"
+
+# Were we the boot kernel?
+if [[ ! -e "/boot/boot/boot.scr" ]]; then
+	# We were the current boot kernel, let's see if the boot-old.scr is ok?
+	[[ -e "/boot/boot/boot-old.scr" ]] && {
+		# It is... we can simply revert to the previous kernel without making a fuss.
+		mv "/boot/boot/boot-old.scr" "/boot/boot/boot.scr"
+		exit 0
+	}
+
+	>&2 echo "WARNING: With the removal of this kernel, the system will now no longer be able to boot. no backup kernel found!"
+else
+	# No, but maybe the backup?
+	[[ -e "/boot/boot/boot-old.scr" ]] || {
+		>&2 echo "Info: Removing now stale backup boot kernel script (boot-old.scr)"
+		rm "/boot/boot/boot-old.scr"
+	}
+fi
+

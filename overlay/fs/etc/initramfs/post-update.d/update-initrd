@@ -1,0 +1,9 @@
+#!/bin/bash
+
+version="$1"
+initramfs="$2"
+output="/boot/uInitrd-$version"
+
+/usr/bin/mkimage -A powerpc -T ramdisk -C none \
+		 -n "MyBook Live Ramdisk - Linux $version" \
+		 -d "$initramfs" "$output" > /dev/null
