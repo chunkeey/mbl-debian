@@ -271,6 +271,9 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# They don't belong into this image
 	sed -i '/#\ definitions\ of\ existing\ MD\ arrays/,/^$/d' /etc/mdadm/mdadm.conf
 
+	echo "overlay" >> /etc/initramfs-tools/modules
+	touch /disable-root-ro
+
 	# install kernel image (mostly for the modules)
 	dpkg -i /tmp/linux-*deb
 
