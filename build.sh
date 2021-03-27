@@ -250,8 +250,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen
 
 	/usr/sbin/locale-gen
+	# Set root password...
 	echo "root:$ROOT_PASSWORD" | /usr/sbin/chpasswd
-	/usr/bin/passwd -e root
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
 
@@ -284,6 +284,10 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	apt install -f -y
 
 	apt install -y $APT_INSTALL_PACKAGES
+
+	# ... but make it so, that root has to change it on the first login
+	# (This hopefully unbreaks dnsmasq install)
+	/usr/bin/passwd -e root
 
 	# cleanup
 	apt clean
