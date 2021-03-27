@@ -289,6 +289,11 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# (This hopefully unbreaks dnsmasq install)
 	/usr/bin/passwd -e root
 
+	# git doesn't track permission on folders, so we have to step and lock
+	# the /boot and /root (since we likely created these folders with the
+	# overlay.
+	chmod 0770 /boot /root
+
 	# cleanup
 	apt clean
 	apt-get --purge -y autoremove
