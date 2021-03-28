@@ -13,6 +13,15 @@
 [ -f /etc/ssh/ssh_host_rsa_key ] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
 [ -f /etc/ssh/ssh_host_ed25519_key] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
 [ -f /etc/ssh/ssh_host_ecdsa_key ] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+
+[ -f /etc/dropbear/dropbear_rsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_rsa_host_key -t rsa -N ""
+[ -f /etc/dropbear/dropbear_ecdsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_ecdsa_host_key -t ecdsa -N ""
+[ -f /etc/dropbear/dropbear_ed25519_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_ed25519_host_key -t ed25519 -N ""
+
+[ -f /etc/dropbear-initramfs/dropbear_rsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_rsa_host_key -t rsa -N ""
+[ -f /etc/dropbear-initramfs/dropbear_ecdsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_ecdsa_host_key -t ecdsa -N ""
+[ -f /etc/dropbear-initramfs/dropbear_ed25519_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_ed25519_host_key -t ed25519 -N ""
+
 /usr/sbin/service ssh start
 /usr/sbin/update-rc.d ssh defaults
 
@@ -35,6 +44,8 @@ cat << HDPARMENTRY >> /etc/hdparm.conf
 	spindown_time = 123
 }
 HDPARMENTRY
+
+update-initramfs -u
 
 /usr/sbin/update-rc.d first_boot remove
 rm -f $0

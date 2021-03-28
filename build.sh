@@ -81,7 +81,7 @@ done
 #
 DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
         bzip2,locales,aptitude,file,xz-utils,initramfs-tools,\
-        console-common,console-setup,console-setup-linux,\
+        console-common,console-setup,console-setup-linux,dropbear,dropbear-initramfs \
         keyboard-configuration,net-tools,openssh-server,wget,netcat,curl,\
         ca-certificates,debian-archive-keyring,debian-ports-archive-keyring,\
         fdisk,gdisk,parted,e2fsprogs,mdadm,dmsetup,bsdextrautils"
@@ -273,6 +273,9 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	echo "overlay" >> /etc/initramfs-tools/modules
 	touch /disable-root-ro
+
+	rm -f /etc/dropbear/dropbear_*_host_key
+	rm -f /etc/dropbear-initramfs/dropbear_*_host_key
 
 	# install kernel image (mostly for the modules)
 	dpkg -i /tmp/linux-*deb
