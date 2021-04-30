@@ -17,6 +17,6 @@ $OBJCOPY -O binary -R .reginfo -R .notes -R .note -R .comment \
 
 /usr/bin/mkimage -A powerpc -O linux -T kernel -C gzip \
 		 -a 0x00000000 -e 0x00000000 \
-		 -n 'MyBook Live Linux $version' -d "$tmpfile.gz" "$output" > /dev/null
+		 -n "MyBook Live Linux $version" -d "$tmpfile.gz" "$output" > /dev/null
 
 rm -f $tmpfile.gz
