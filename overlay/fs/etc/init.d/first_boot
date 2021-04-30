@@ -48,4 +48,4 @@ HDPARMENTRY
 update-initramfs -u
 
 /usr/sbin/update-rc.d first_boot remove
-rm -f $0
+rm -f "$0"
