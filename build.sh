@@ -58,7 +58,7 @@ declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU_STATIC qemu-user-stati
 	"$DTC device-tree-compiler" "$KPARTX kpartx" "$PARTPROBE parted"
 	"$DEBOOTSTRAP debootstrap" "/usr/bin/git git" "/bin/mount mount" "/usr/bin/rsync rsync"
 	"/sbin/gdisk gdisk" "/sbin/fdisk fdisk" "/usr/sbin/chroot coreutils"
-	"/sbin/mkswap util-linux"
+	"/sbin/mkswap util-linux" "/usr/sbin/zerofree zerofree"
 	"/usr/bin/powerpc-linux-gnu-gcc gcc-powerpc-linux-gnu"
 	"/usr/bin/powerpc-linux-gnu-ld binutils-powerpc-linux-gnu")
 
@@ -317,12 +317,13 @@ INSTALLEOF
 chmod a+x "$TARGET/tmp/install-script.sh"
 LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
 
-dd if=/dev/zero of=$TARGET/tmp/file 2>/dev/null || echo ""
-rm -f $TARGET/tmp/file
-
 sleep 2
 
 /bin/umount -A -R -l "$TARGET"
+
+
+/usr/sbin/zerofree -v "$BOOTP"
+/usr/sbin/zerofree -v "$ROOTP"
 
 [[ $MAKE_RAID ]] && {
 	# super 1.0 is between 8k and 12k
