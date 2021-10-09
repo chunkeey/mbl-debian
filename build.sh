@@ -80,14 +80,15 @@ done
 # scripts that run before we can apt install packages...
 #
 DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
-        bzip2,locales,aptitude,file,xz-utils,initramfs-tools,\
-        console-common,console-setup,console-setup-linux,dropbear,dropbear-initramfs \
-        keyboard-configuration,net-tools,openssh-server,wget,netcat,curl,\
-        ca-certificates,debian-archive-keyring,debian-ports-archive-keyring,\
-        fdisk,gdisk,parted,e2fsprogs,mdadm,dmsetup,bsdextrautils"
+        bzip2,locales,aptitude,file,xz-utils,initramfs-tools,fdisk,gdisk,\
+        console-common,console-setup,console-setup-linux,parted,e2fsprogs,\
+        dropbear,dropbear-initramfs,keyboard-configuration,ca-certificates,\
+        debian-archive-keyring,debian-ports-archive-keyring,mdadm,dmsetup,\
+        bsdextrautils"
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
+	openssh-server netcat net-tools curl wget \
 	openssl smartmontools hdparm smartmontools cryptsetup \
 	nfs-common nfs-kernel-server rpcbind samba rsync telnet \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
@@ -198,6 +199,10 @@ if [ -d $OURPATH/overlay/fs ]; then
 fi
 
 mv linux-*.deb "$TARGET/tmp"
+if [ -d fix-missing-ports ]; then
+	mkdir -p "$TARGET/tmp/fix"
+	cp fix-missing-ports/*.deb "$TARGET/tmp/fix"
+fi
 
 mkdir -p "$TARGET/dev/mapper"
 
@@ -255,9 +260,6 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
 
-	# If a root-keyfile is already in place. Don't change the SSH Default password setting for root
-	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
-
 	mkdir -p /etc/systemd/system/cockpit.socket.d/
 	cat <<-CPLISTEN > /etc/systemd/system/cockpit.socket.d/listen.conf
 	[Socket]
@@ -280,13 +282,21 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# install kernel image (mostly for the modules)
 	dpkg -i /tmp/linux-*deb
 
-	update-rc.d first_boot defaults
-	update-rc.d first_boot enable
+	if [ -d /tmp/fix ]; then
+		dpkg -i /tmp/fix/*.deb
+	fi
 
 	# First, try to fix bad packages dependencies
 	apt install -f -y
 
 	apt install -y $APT_INSTALL_PACKAGES
+
+	# If a root-keyfile is already in place. Don't change the SSH Default password setting for root
+	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
+
+	# Configure first_boot
+	update-rc.d first_boot defaults
+	update-rc.d first_boot enable
 
 	# ... but make it so, that root has to change it on the first login
 	# (This hopefully unbreaks dnsmasq install)
