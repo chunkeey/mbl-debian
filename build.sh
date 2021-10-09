@@ -12,6 +12,7 @@ DATE=$(date +%Y%m%d-%H%M)
 ARCH=powerpc
 TARGET=mbl-debian
 SOURCE=http://ftp.ports.debian.org/debian-ports
+SOURCE_SRC=http://ftp.debian.org/debian
 
 QEMU_STATIC=/usr/bin/qemu-ppc-static
 MKIMAGE=/usr/bin/mkimage
@@ -218,7 +219,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	#apt
 	cat <<-SOURCESEOF > /etc/apt/sources.list
 	deb $SOURCE $RELEASE main contrib non-free
-	deb-src $SOURCE $RELEASE main contrib non-free
+	deb-src $SOURCE_SRC $RELEASE main contrib non-free
 	SOURCESEOF
 
 	# fstab
