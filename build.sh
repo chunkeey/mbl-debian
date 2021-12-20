@@ -89,7 +89,7 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
-	openssh-server netcat net-tools curl wget \
+	openssh-server netcat-traditional net-tools curl wget apt systemd-timesyncd \
 	openssl smartmontools hdparm smartmontools cryptsetup \
 	nfs-common nfs-kernel-server rpcbind samba rsync telnet \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
@@ -200,10 +200,11 @@ if [ -d $OURPATH/overlay/fs ]; then
 fi
 
 mv linux-*.deb "$TARGET/tmp"
-if [ -d fix-missing-ports ]; then
+if [ -f fix-missing-ports/*.deb ]; then
 	mkdir -p "$TARGET/tmp/fix"
 	cp fix-missing-ports/*.deb "$TARGET/tmp/fix"
 fi
+rm linux-upstream*
 
 mkdir -p "$TARGET/dev/mapper"
 
@@ -313,6 +314,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	apt-get --purge -y autoremove
 	rm -rf /var/lib/apt/lists/* /var/tmp/*
 	rm -f /tmp/linux*deb /tmp/debconf.set
+	apt-mark minimize-manual -y
 
 	# Delete the generated ssh key - It has to go since otherwise
 	# the key is shipped with the image and will not be unique
@@ -331,7 +333,6 @@ LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
 sleep 2
 
 /bin/umount -A -R -l "$TARGET"
-
 
 /usr/sbin/zerofree -v "$BOOTP"
 /usr/sbin/zerofree -v "$ROOTP"
