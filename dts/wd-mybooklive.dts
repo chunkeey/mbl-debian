@@ -56,21 +56,21 @@
 	leds {
 		compatible = "gpio-leds";
 
-		/* There's just one tri-color LED. */
-		failsafe: power-red {
+		/* There's just one tri-color LED with 3 pins. */
+		led-0 {
 			function = LED_FUNCTION_FAULT;
 			color = <LED_COLOR_ID_RED>;
 			gpios = <&GPIO1 4 GPIO_ACTIVE_HIGH>;
 			linux,default-trigger = "panic";
 		};
 
-		power-green {
+		led-1 {
 			function = LED_FUNCTION_POWER;
 			color = <LED_COLOR_ID_GREEN>;
 			gpios = <&GPIO1 5 GPIO_ACTIVE_HIGH>;
 		};
 
-		power-blue {
+		led-2 {
 			function = LED_FUNCTION_DISK;
 			color = <LED_COLOR_ID_BLUE>;
 			gpios = <&GPIO1 6 GPIO_ACTIVE_HIGH>;
@@ -83,7 +83,7 @@
 		poll-interval = <60>;	/* 3 * 20 = 60ms */
 		autorepeat;
 
-		reset-button {
+		button {
 			label = "Reset button";
 			linux,code = <KEY_RESTART>;
 			gpios = <&GPIO2 2 GPIO_ACTIVE_LOW>;
