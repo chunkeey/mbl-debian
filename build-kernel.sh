@@ -13,7 +13,7 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
-LINUX_VER=v5.16-rc6
+LINUX_VER=v5.17-rc8
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
 LINUX_LOCAL="cached-linux"
