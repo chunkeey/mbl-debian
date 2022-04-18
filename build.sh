@@ -85,7 +85,7 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
         console-common,console-setup,console-setup-linux,parted,e2fsprogs,\
         dropbear,dropbear-initramfs,keyboard-configuration,ca-certificates,\
         debian-archive-keyring,debian-ports-archive-keyring,mdadm,dmsetup,\
-        bsdextrautils"
+        bsdextrautils,zstd"
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
