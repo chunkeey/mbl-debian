@@ -24,7 +24,7 @@ DEBOOTSTRAP=/usr/sbin/debootstrap
 DO_COMPRESS=1
 
 # HDD Image
-BOOTSIZE=134217728   # 128 MiB
+BOOTSIZE=285212672   # 272 MiB
 ROOTSIZE=4152360960  # ~ 4GiB
 SWAPFILESIZE=768     # in MiB
 BOOTUUID=$(uuidgen)
@@ -85,7 +85,7 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
         console-common,console-setup,console-setup-linux,parted,e2fsprogs,\
         dropbear,dropbear-initramfs,keyboard-configuration,ca-certificates,\
         debian-archive-keyring,debian-ports-archive-keyring,mdadm,dmsetup,\
-        bsdextrautils,zstd"
+        bsdextrautils,zstd,libubootenv-tool"
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
@@ -246,10 +246,11 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 		iface eth0 inet6 auto
 	NETOF
 
-	# Console settings
+	# Debian unattented settings
 	cat <<-CONSET > /tmp/debconf.set
 		console-common	console-data/keymap/policy	select	Select keymap from full list
 		console-common	console-data/keymap/full	select	us
+		iperf		iperf3/start_daemon		string	false
 	CONSET
 
 	( export DEBIAN_FRONTEND=noninteractive; debconf-set-selections /tmp/debconf.set )
@@ -270,6 +271,12 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	ListenStream=443
 	ListenStream=9090
 	CPLISTEN
+
+	cat <<-FWCONF > /etc/fw_env.config
+	# MTD device name	Device offset	Env. size	Flash sector size	Number of sectors
+	/dev/mtd1		0x0000		0x1000		0x1000			1
+	/dev/mtd1		0x1000		0x1000		0x1000			1
+	FWCONF
 
 	# Delete "existing" MD arrays... These have been copied from the Host system
 	# They don't belong into this image

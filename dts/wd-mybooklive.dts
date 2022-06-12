@@ -68,6 +68,7 @@
 			function = LED_FUNCTION_POWER;
 			color = <LED_COLOR_ID_GREEN>;
 			gpios = <&GPIO1 5 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
 		};
 
 		led-2 {
