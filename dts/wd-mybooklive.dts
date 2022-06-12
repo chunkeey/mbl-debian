@@ -125,7 +125,7 @@
 
 &NOR {
 	status = "okay";
-	compatible = "jedec,spi-nor";
+	compatible = "jedec-flash";
 	bank-width = <1>;
 	reg = <0x00000000 0x00000000 0x00080000>;
 	#address-cells = <1>;
