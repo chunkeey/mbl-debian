@@ -13,12 +13,12 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
-LINUX_VER=${1:-v5.19-rc1}
+LINUX_VER="${1:-v4.19.248}"
 LINUX_SV="$(echo $LINUX_VER | cut -d. -f-2)"
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
-LINUX_LOCAL="cached-linux"
-LINUX_GIT=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+LINUX_LOCAL="cached-stable-linux"
+LINUX_GIT=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
 
 OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
