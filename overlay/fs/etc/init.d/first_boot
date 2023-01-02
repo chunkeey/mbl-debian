@@ -48,4 +48,5 @@ HDPARMENTRY
 update-initramfs -u
 
 /usr/sbin/update-rc.d first_boot remove
+systemctl daemon-reload
 rm -f "$0"
