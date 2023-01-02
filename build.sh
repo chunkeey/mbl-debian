@@ -237,13 +237,26 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	# Networking
 	cat <<-NETOF > /etc/network/interfaces
+		# This file describes the network interfaces available on your system
+		# and how to activate them. For more information, see interfaces(5).
+
+		source /etc/network/interfaces.d/*
+
+		# The loopback network interface
 		auto lo
-
 		iface lo inet loopback
+	NETOF
 
+	cat <<-NETOF > /etc/network/interfaces.d/eth0
 		allow-hotplug eth0
 		iface eth0 inet dhcp
 		iface eth0 inet6 auto
+	NETOF
+
+	cat <<-NETOF > /etc/network/interfaces.d/end0
+		allow-hotplug end0
+		iface end0 inet dhcp
+		iface end0 inet6 auto
 	NETOF
 
 	# Debian unattented settings
