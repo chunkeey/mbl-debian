@@ -285,6 +285,9 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	ListenStream=9090
 	CPLISTEN
 
+	# Make it possible to login to cockpit as root... by deleting the "root" user by overwriting that file
+	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
+
 	cat <<-FWCONF > /etc/fw_env.config
 	# MTD device name	Device offset	Env. size	Flash sector size	Number of sectors
 	/dev/mtd1		0x0000		0x1000		0x1000			1
