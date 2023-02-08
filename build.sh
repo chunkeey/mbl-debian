@@ -93,7 +93,7 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	openssl smartmontools hdparm smartmontools cryptsetup \
 	nfs-common nfs-kernel-server rpcbind samba rsync telnet \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
-	bcache-tools duperemove fuse thin-provisioning-tools \
+	bcache-tools duperemove thin-provisioning-tools \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
 	cockpit cockpit-packagekit cockpit-networkmanager \
 	cockpit-storaged watchdog lm-sensors uuid-runtime"
