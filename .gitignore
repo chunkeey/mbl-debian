@@ -10,6 +10,7 @@
 *.bak
 linux/
 cached-linux/
+cached-stable-linux/
 mbl-debian/
 *.img
 *.img.*
