@@ -209,7 +209,7 @@ rm linux-upstream*
 mkdir -p "$TARGET/dev/mapper"
 
 cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
-	#!/bin/bash
+	#!/bin/bash -e
 
 	export LANGUAGE=en_US.UTF-8
 	export LANG=en_US.UTF-8
@@ -285,9 +285,6 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	ListenStream=9090
 	CPLISTEN
 
-	# Make it possible to login to cockpit as root... by deleting the "root" user by overwriting that file
-	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
-
 	cat <<-FWCONF > /etc/fw_env.config
 	# MTD device name	Device offset	Env. size	Flash sector size	Number of sectors
 	/dev/mtd1		0x0000		0x1000		0x1000			1
@@ -318,6 +315,9 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	# If a root-keyfile is already in place. Don't change the SSH Default password setting for root
 	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
+
+	# Make it possible to login to cockpit as root... by deleting the "root" user by overwriting that file
+	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
 
 	# Configure first_boot
 	update-rc.d first_boot defaults
