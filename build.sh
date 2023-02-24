@@ -96,7 +96,7 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	bcache-tools duperemove thin-provisioning-tools \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
 	cockpit cockpit-packagekit cockpit-networkmanager \
-	cockpit-storaged watchdog lm-sensors uuid-runtime"
+	cockpit-storaged watchdog lm-sensors uuid-runtime rng-tools-debian"
 
 DTS_DIR=dts
 LINUX_DIR=linux
