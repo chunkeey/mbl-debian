@@ -219,8 +219,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	#apt
 	cat <<-SOURCESEOF > /etc/apt/sources.list
-	deb $SOURCE $RELEASE main contrib non-free
-	deb-src $SOURCE_SRC $RELEASE main contrib non-free
+	deb $SOURCE $RELEASE main contrib non-free non-free-firmware
+	deb-src $SOURCE_SRC $RELEASE main contrib non-free non-free-firmware
 	SOURCESEOF
 
 	# fstab
