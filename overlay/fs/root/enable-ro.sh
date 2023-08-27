@@ -1,3 +1,5 @@
 #!/bin/bash
 
-touch /disable-root-ro
+echo "Setting FLAGFILE"
+rm -f /disable-root-ro
+reboot
