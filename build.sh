@@ -256,17 +256,15 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 		iface lo inet loopback
 	NETOF
 
-	cat <<-NETOF > /etc/network/interfaces.d/eth0
-		allow-hotplug eth0
-		iface eth0 inet dhcp
-		iface eth0 inet6 auto
+	cat <<-NETOF > /etc/systemd/network/20-ether.link
+		[Match]
+		Type=ether
+
+		[Network]
+		DHCP=yes
 	NETOF
 
-	cat <<-NETOF > /etc/network/interfaces.d/end0
-		allow-hotplug end0
-		iface end0 inet dhcp
-		iface end0 inet6 auto
-	NETOF
+	systemctl enable systemd-networkd
 
 	# Debian unattented settings
 	cat <<-CONSET > /tmp/debconf.set
