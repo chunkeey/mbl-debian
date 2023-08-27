@@ -30,6 +30,10 @@ SWAPFILESIZE=768     # in MiB
 BOOTUUID=$(uuidgen)
 ROOTPARTUUID=$(uuidgen)
 ROOTUUID=$(uuidgen)
+BOOTPARTNAME="BOOT"
+BOOTPARTNO=1	     # UBoot scripts rely on this being 1
+ROOTPARTNAME="mblroot"
+ROOTPARTNO=2
 IMAGESIZE=$(("$BOOTSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
 IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
@@ -121,19 +125,24 @@ trap "/bin/umount -A -R -l $TARGET || echo unmounted; $KPARTX -d $IMAGE || echo 
 	y
 	n
 	p
-	1
+	$BOOTPARTNO
 
 	+$(to_k $BOOTSIZE)
 
+	c
+	$BOOTPARTNAME
 	n
 	p
-	2
+	$ROOTPARTNO
 
 	+$(to_k $ROOTSIZE)
 
+	c
+	$ROOTPARTNO
+	$ROOTPARTNAME
 	x
 	c
-	2
+	$ROOTPARTNO
 	$ROOTPARTUUID
 	m
 	w
@@ -148,8 +157,8 @@ DEVICE=$($KPARTX -vas "$IMAGE" | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1)
 sleep 1
 
 DEVICE="/dev/mapper/${DEVICE}"
-BOOTP=${DEVICE}p1
-ROOTP=${DEVICE}p2
+BOOTP="${DEVICE}p${BOOTPARTNO}"
+ROOTP="${DEVICE}p${ROOTPARTNO}"
 
 # Kernel build
 ./build-kernel.sh
@@ -157,12 +166,12 @@ ROOTP=${DEVICE}p2
 # Make filesystems
 
 # Boot ext2 Filesystem - revision 1 is needed because of u-boot ext2load
-/sbin/mkfs.ext2 "$BOOTP" -O filetype -L BOOT -m 0 -U $BOOTUUID -b 1024
+/sbin/mkfs.ext2 "$BOOTP" -O filetype -L "$BOOTPARTNAME" -m 0 -U $BOOTUUID -b 1024
 # Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
 /sbin/resize2fs "$BOOTP" $(( $BOOTSIZE / 1024 - 128 ))
 
 # Root Filesystem - ext4 is specified in rootfstype= kernel cmdline
-/sbin/mkfs.ext4 "$ROOTP" -L root -U $ROOTUUID -b 4096
+/sbin/mkfs.ext4 "$ROOTP" -L "$ROOTPARTNAME" -U $ROOTUUID -b 4096
 # Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
 /sbin/resize2fs "$ROOTP" $(( $ROOTSIZE / 4096 - 32 ))
 
@@ -379,10 +388,10 @@ $KPARTX -d "$IMAGE"
 
 	/sbin/gdisk "$IMAGE" <<-RAIDEOF
 		t
-		1
+		$BOOTPARTNO
 		fd00
 		t
-		2
+		$ROOTPARTNO
 		fd00
 		w
 		y

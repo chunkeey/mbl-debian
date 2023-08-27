@@ -28,13 +28,13 @@ if [[ -f "/boot/uInitrd-$version" ]]; then
 	LOAD_INITRD2="load_initrd2 "
 	RAMDISK="\${ramdisk_addr_r}"
 else
-	RAMDISK="-"
+	unset RAMDISK
 fi
 
 cat <<- INITRDBOOTSCRIPTEOF >> "$BOOTSCRIPT"
 	setenv load_part1 'run load_kernel1 ${LOAD_INITRD1}load_dtb1'
 	setenv load_part2 'run load_kernel2 ${LOAD_INITRD2}load_dtb2'
-	setenv boot_sata 'sata init; run load_sata; run addtty; bootm \${kernel_addr_r} $RAMDISK \${fdt_addr_r}'
+	setenv boot_sata 'sata init; run load_sata; run addtty; bootm \${kernel_addr_r} ${RAMDISK:--} \${fdt_addr_r}'
 	run boot_sata
 INITRDBOOTSCRIPTEOF
 
@@ -42,6 +42,11 @@ INITRDBOOTSCRIPTEOF
 		 -d "$BOOTSCRIPT" "/boot/boot/boot-$version.scr"
 
 mv "/boot/boot/boot.scr" "/boot/boot/boot-old.scr" 2>/dev/null || >&2 echo "No previous boot script existed."
+mv "/boot/uImage" "/boot/uImage-old" 2>/dev/null || true
+[[ -v RAMDISK ]] && mv "/boot/uInitrd" "/boot/uInitrd-old" 2>/dev/null || true
+
 ln -s "boot-$version.scr" "/boot/boot/boot.scr"
+ln -s "uImage-$version" "/boot/uImage"
+[[ -v RAMDISK ]] && ln -s "uInitrd-$version" "/boot/uInitrd"
 
 rm -f "$BOOTSCRIPT"

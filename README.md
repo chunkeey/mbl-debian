@@ -48,6 +48,69 @@ the MyBook Live in order to write it directly onto /dev/sda.
 After the image has been written, remove and reinsert the powerplug to do a instant reset.
 The MyBook Live should then boot into a vanilla Debian Sid/Unstable.
 
+## Boot from USB (exclusive for the My Book Live DUO)
+
+Please note that, booting from USB is really slow (6-10 Minutes)! Please be patient and give
+the device some additional minutes to load the DTB, kernel and Initrd image. You'll get a
+confirmation that the process itself is working since the DTB is just 32KiB so it loads
+within seconds. So once you see "32768 bytes read", just let it do its thing peacefully.
+
+To do that: Extract the image to a compatible USB-Stick (anything that works with U-Boot).
+Then attach a UART (DO NOT US a RS232/TTL without a CMOS/3.3V-Level converter), while the
+device is off.
+
+The power on the device, it boots up and enter the U-Boots prompt (The device tells you to
+"Hit any key to stop autoboot", you have to be quick to press a key there, otherwise you
+have to try again!). Next, once you managed to get to the PROMPT ("=>"), then copy&paste
+the following commands line by line (to the letter! The quote (') get easily lost...).
+If you get weird errors like: 'unknown command setenv', then write everything by hand.
+
+    setenv usb_load_dtb 'ext2load usb 0:1 ${fdt_addr_r} /apollo3g.dtb'
+    setenv usb_load_uImage 'ext2load usb 0:1 ${kernel_addr_r} /uImage'
+    setenv usb_load_uInitrd 'ext2load usb 0:1 \${ramdisk_addr_r} /uInitrd'
+    setenv usb_load 'run usb_load_dtb usb_load_uImage usb_load_uInitrd'
+    setenv usb_env 'setenv bootargs '\$bootargs root=PARTLABEL=mblroot''
+    setenv usb_boot 'bootm ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}'
+    setenv usb 'usb start; run usb_load usb_env usb_boot'
+
+When you are done, please verify handy-work with `printenv` / `echo $usb` first before
+issuing the following command that writes these scripts to the u-boot-env.
+
+    saveenv
+
+now you can give this a one-time try... by entering:
+
+    run addtty usb
+
+This allows you to test and confirm that it is working. 
+
+So if it doesn't work: you can leave this all "as-is", you don't need to 
+revert/restore anything.
+
+But if it worked and you are happy with the boottimes, then you can make 
+the usb-boot permanent by entering the following commands when you reboot
+and reenter u-boot.
+
+    setenv bootcmd 'run usb || run boot_sata_script_ap2nc'
+    saveenv
+
+This will cause the MBL Duo to boot from an attached usb-stick first and if it fails,
+it then tries to boot from the harddrives as before.
+
+Note: you can still rollback at any time to factory default, by running the following
+commands in the U-boot prompt:
+
+    setenv usb_load_dtb
+    setenv usb_load_uImage
+    setenv usb_load_uInitrd
+    setenv usb_load
+    setenv usb_env
+    setenv usb_boot
+    setenv bootcmd 'run boot_sata_script_ap2nc'
+    saveenv
+
+This removes all usb boot scripts/commands and restores the previous boot-order.
+
 ## Usage
 
 For access and administration, the image comes preinstalled with the [cockpit](https://cockpit-project.org/) web interface at [https://mbl-debian](https://mbl-debian).
