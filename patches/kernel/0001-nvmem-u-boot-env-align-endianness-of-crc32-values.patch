@@ -1,0 +1,62 @@
+From 12c13fce7c6e764ce34747d38a1bd653765c3fa3 Mon Sep 17 00:00:00 2001
+From: INAGAKI Hiroshi <musashino.open@gmail.com>
+Date: Mon, 13 Feb 2023 22:23:51 +0900
+Subject: [PATCH] nvmem: u-boot-env: align endianness of crc32 values
+
+This patch fixes crc32 error on Big-Endianness system by conversion of
+calculated crc32 value.
+
+Little-Endianness system:
+
+  obtained crc32: Little
+calculated crc32: Little
+
+Big-Endianness system:
+
+  obtained crc32: Little
+calculated crc32: Big
+
+log (APRESIA ApresiaLightGS120GT-SS, RTL8382M, Big-Endianness):
+
+[    8.570000] u_boot_env 18001200.spi:flash@0:partitions:partition@c0000: Invalid calculated CRC32: 0x88cd6f09 (expected: 0x096fcd88)
+[    8.580000] u_boot_env: probe of 18001200.spi:flash@0:partitions:partition@c0000 failed with error -22
+
+Fixes: f955dc144506 ("nvmem: add driver handling U-Boot environment variables")
+
+Signed-off-by: INAGAKI Hiroshi <musashino.open@gmail.com>
+---
+ drivers/nvmem/u-boot-env.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/nvmem/u-boot-env.c b/drivers/nvmem/u-boot-env.c
+index ee9fd9989b6e..830667a65b7b 100644
+--- a/drivers/nvmem/u-boot-env.c
++++ b/drivers/nvmem/u-boot-env.c
+@@ -143,8 +143,8 @@ static int u_boot_env_parse(struct u_boot_env *priv)
+ 	size_t crc32_offset;
+ 	size_t data_offset;
+ 	size_t data_len;
+-	uint32_t crc32;
+-	uint32_t calc;
++	__le32 crc32;
++	__le32 calc;
+ 	size_t bytes;
+ 	uint8_t *buf;
+ 	int err;
+@@ -178,11 +178,11 @@ static int u_boot_env_parse(struct u_boot_env *priv)
+ 		data_offset = offsetof(struct u_boot_env_image_broadcom, data);
+ 		break;
+ 	}
+-	crc32 = le32_to_cpu(*(__le32 *)(buf + crc32_offset));
++	crc32 = cpu_to_le32(*(uint32_t *)(buf + crc32_offset));
+ 	crc32_data_len = priv->mtd->size - crc32_data_offset;
+ 	data_len = priv->mtd->size - data_offset;
+ 
+-	calc = crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L;
++	calc = cpu_to_le32(crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L);
+ 	if (calc != crc32) {
+ 		dev_err(dev, "Invalid calculated CRC32: 0x%08x (expected: 0x%08x)\n", calc, crc32);
+ 		err = -EINVAL;
+-- 
+2.40.1
+
