@@ -11,8 +11,8 @@ REV=1.00
 
 DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
-DTB_MBL=dts/wd-mybooklive.dtb
-LINUX_DIR=linux
+DTB_MBL=build/wd-mybooklive.dtb
+LINUX_DIR=build/linux
 LINUX_VER=${1:-v6.5-rc7}
 LINUX_SV="$(echo $LINUX_VER | cut -d. -f-2)"
 

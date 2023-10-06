@@ -10,7 +10,7 @@ DISTRIBUTION=Debian
 DATE=$(date +%Y%m%d-%H%M)
 
 ARCH=powerpc
-TARGET=mbl-debian
+TARGET=build/mbl-debian
 SOURCE=http://ftp.ports.debian.org/debian-ports
 SOURCE_SRC=http://ftp.debian.org/debian
 
@@ -36,7 +36,7 @@ ROOTPARTNAME="mblroot"
 ROOTPARTNO=2
 IMAGESIZE=$(("$BOOTSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
-IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
+IMAGE="build/$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
 
 # Problem here is that the kernel md-autodetect code needs
 # a 0.90 SuperBlock for the rootfs to boot off. The 0.90
@@ -102,8 +102,8 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	cockpit cockpit-packagekit cockpit-networkmanager \
 	cockpit-storaged watchdog lm-sensors uuid-runtime rng-tools-debian"
 
-DTS_DIR=dts
-LINUX_DIR=linux
+DTS_DIR=build/dts
+LINUX_DIR=build/linux
 
 # Cleanup
 
@@ -187,8 +187,8 @@ chmod 0600 "$TARGET/.swapfile"
 mkdir -p "$TARGET/boot"
 mount "$BOOTP" "$TARGET/boot" -t ext2
 mkdir -p "$TARGET/boot/boot"
-cp dts/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
-cp dts/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
+cp build/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
+cp build/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
 
 ROOTBOOT="UUID=$ROOTUUID"
 
@@ -208,12 +208,11 @@ if [ -d $OURPATH/overlay/fs ]; then
 	cp -vR $OURPATH/overlay/fs/* "$TARGET"
 fi
 
-mv linux-*.deb "$TARGET/tmp"
+cp build/linux-*.deb "$TARGET/tmp"
 if [ -f fix-missing-ports/*.deb ]; then
 	mkdir -p "$TARGET/tmp/fix"
 	cp fix-missing-ports/*.deb "$TARGET/tmp/fix"
 fi
-rm linux-upstream*
 
 mkdir -p "$TARGET/dev/mapper"
 
