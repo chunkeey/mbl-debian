@@ -4,6 +4,7 @@
 
 OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+MBLBRANCH=unstable
 RELEASE=unstable
 ROOT_PASSWORD=debian
 DISTRIBUTION=Debian
@@ -36,7 +37,7 @@ ROOTPARTNAME="mblroot"
 ROOTPARTNO=2
 IMAGESIZE=$(("$BOOTSIZE" + "$ROOTSIZE" + (4 * 1024 * 1024 )))
 
-IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$DATE.img"
+IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$MBLBRANCH-$DATE.img"
 
 # Problem here is that the kernel md-autodetect code needs
 # a 0.90 SuperBlock for the rootfs to boot off. The 0.90
