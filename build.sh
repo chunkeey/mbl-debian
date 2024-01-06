@@ -195,9 +195,8 @@ ROOTBOOT="UUID=$ROOTUUID"
 
 echo "$ROOTBOOT" > "$TARGET/boot/boot/root-device"
 
-# debootstap
-
-$DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
+# debootstrap needs chroot available in PATH. This is for "root" but not necessarily for sudo...
+PATH=$PATH:/usr/sbin $DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
 
 mkdir -p "$TARGET/usr/bin"
 cp "$QEMU_STATIC" "$TARGET"/usr/bin/
