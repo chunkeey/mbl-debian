@@ -196,7 +196,8 @@ ROOTBOOT="UUID=$ROOTUUID"
 echo "$ROOTBOOT" > "$TARGET/boot/boot/root-device"
 
 # debootstrap needs chroot available in PATH. This is for "root" but not necessarily for sudo...
-PATH=$PATH:/usr/sbin $DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
+source /etc/profile
+$DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
 
 mkdir -p "$TARGET/usr/bin"
 cp "$QEMU_STATIC" "$TARGET"/usr/bin/
@@ -224,7 +225,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	export LANG=en_US.UTF-8
 	export LC_ALL=en_US.UTF-8
 
-	. /etc/profile
+	source /etc/profile
 
 	#apt
 	cat <<-SOURCESEOF > /etc/apt/sources.list
