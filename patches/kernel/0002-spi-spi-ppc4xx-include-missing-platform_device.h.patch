@@ -1,0 +1,35 @@
+From 124e41c6da31e88e66b5adb3b78813e2ef97b650 Mon Sep 17 00:00:00 2001
+From: Christian Lamparter <chunkeey@gmail.com>
+Date: Fri, 9 Feb 2024 15:19:31 +0100
+Subject: [PATCH] spi: spi-ppc4xx: include missing platform_device.h
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+the driver currently fails to compile due to:
+| spi-ppc4xx.c: In function ‘spi_ppc4xx_of_probe’:
+| spi-ppc4xx.c:346:36: error: invalid use of undefined type ‘struct platform_device’
+| 346 |         struct device_node *np = op->dev.of_node;
+|     |                                    ^~
+| ...
+
+Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+---
+ drivers/spi/spi-ppc4xx.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/spi/spi-ppc4xx.c b/drivers/spi/spi-ppc4xx.c
+index 03aab661be9d..412d6e678224 100644
+--- a/drivers/spi/spi-ppc4xx.c
++++ b/drivers/spi/spi-ppc4xx.c
+@@ -25,6 +25,7 @@
+ #include <linux/slab.h>
+ #include <linux/errno.h>
+ #include <linux/wait.h>
++#include <linux/platform_device.h>
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
+ #include <linux/of_platform.h>
+-- 
+2.43.0
+

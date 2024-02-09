@@ -1,4 +1,4 @@
-From 12c13fce7c6e764ce34747d38a1bd653765c3fa3 Mon Sep 17 00:00:00 2001
+From 43d22387a307764edb4c5fd7060a0956541bcd9b Mon Sep 17 00:00:00 2001
 From: INAGAKI Hiroshi <musashino.open@gmail.com>
 Date: Mon, 13 Feb 2023 22:23:51 +0900
 Subject: [PATCH] nvmem: u-boot-env: align endianness of crc32 values
@@ -25,38 +25,22 @@ Fixes: f955dc144506 ("nvmem: add driver handling U-Boot environment variables")
 
 Signed-off-by: INAGAKI Hiroshi <musashino.open@gmail.com>
 ---
- drivers/nvmem/u-boot-env.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/nvmem/u-boot-env.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/nvmem/u-boot-env.c b/drivers/nvmem/u-boot-env.c
-index ee9fd9989b6e..830667a65b7b 100644
+index befbab156cda..f44a12f5cb01 100644
 --- a/drivers/nvmem/u-boot-env.c
 +++ b/drivers/nvmem/u-boot-env.c
-@@ -143,8 +143,8 @@ static int u_boot_env_parse(struct u_boot_env *priv)
- 	size_t crc32_offset;
- 	size_t data_offset;
- 	size_t data_len;
--	uint32_t crc32;
--	uint32_t calc;
-+	__le32 crc32;
-+	__le32 calc;
- 	size_t bytes;
- 	uint8_t *buf;
- 	int err;
-@@ -178,11 +178,11 @@ static int u_boot_env_parse(struct u_boot_env *priv)
- 		data_offset = offsetof(struct u_boot_env_image_broadcom, data);
- 		break;
- 	}
--	crc32 = le32_to_cpu(*(__le32 *)(buf + crc32_offset));
-+	crc32 = cpu_to_le32(*(uint32_t *)(buf + crc32_offset));
- 	crc32_data_len = priv->mtd->size - crc32_data_offset;
- 	data_len = priv->mtd->size - data_offset;
+@@ -182,7 +182,7 @@ static int u_boot_env_parse(struct u_boot_env *priv)
+ 	data_len = dev_size - data_offset;
  
--	calc = crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L;
-+	calc = cpu_to_le32(crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L);
- 	if (calc != crc32) {
+ 	calc = crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L;
+-	if (calc != crc32) {
++	if (calc != crc32 || calc != swab32(crc32)) {
  		dev_err(dev, "Invalid calculated CRC32: 0x%08x (expected: 0x%08x)\n", calc, crc32);
  		err = -EINVAL;
+ 		goto err_kfree;
 -- 
-2.40.1
+2.43.0
 
