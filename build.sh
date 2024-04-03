@@ -266,6 +266,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	NETOF
 
 	systemctl enable systemd-networkd
+	systemctl disable networking
 
 	# Debian unattented settings
 	cat <<-CONSET > /tmp/debconf.set
