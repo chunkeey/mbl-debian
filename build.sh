@@ -94,11 +94,11 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
 
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
-	openssh-server netcat-traditional net-tools curl wget apt systemd-timesyncd \
-	openssl smartmontools hdparm smartmontools cryptsetup \
+	openssh-server netcat-traditional net-tools curl wget systemd-timesyncd \
+	smartmontools hdparm smartmontools cryptsetup \
 	nfs-common nfs-kernel-server rpcbind samba rsync telnet \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
-	bcache-tools duperemove thin-provisioning-tools \
+	bcache-tools duperemove \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
 	cockpit cockpit-packagekit cockpit-networkmanager \
 	cockpit-storaged watchdog lm-sensors uuid-runtime rng-tools-debian"
