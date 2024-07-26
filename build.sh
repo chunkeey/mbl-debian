@@ -204,13 +204,13 @@ cp "$QEMU_STATIC" "$TARGET"/usr/bin/
 
 LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /debootstrap/debootstrap --second-stage
 
-if [ -d $OURPATH/overlay/fs ]; then
+if [[ -d $OURPATH/overlay/fs ]]; then
 	echo "Applying fs overlay"
 	cp -vR $OURPATH/overlay/fs/* "$TARGET"
 fi
 
 mv linux-*.deb "$TARGET/tmp"
-if [ -f fix-missing-ports/*.deb ]; then
+if [[ $(ls fix-missing-ports/*.deb 2> /dev/null) ]]; then
 	mkdir -p "$TARGET/tmp/fix"
 	cp fix-missing-ports/*.deb "$TARGET/tmp/fix"
 fi
@@ -310,12 +310,13 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	rm -f /etc/dropbear/dropbear_*_host_key
 	rm -f /etc/dropbear-initramfs/dropbear_*_host_key
 
-	# install kernel image (mostly for the modules)
-	dpkg -i /tmp/linux-*deb
-
 	if [ -d /tmp/fix ]; then
-		dpkg -i /tmp/fix/*.deb
+		find /tmp/fix -name "*.deb" -exec echo '{}' \;
+		find /tmp/fix -name "*.deb" -exec apt install -y '{}' \;
 	fi
+
+	# install kernel image (mostly for the modules)
+	find /tmp -name "linux-*deb" -exec apt install -y '{}' \;
 
 	# First, try to fix bad packages dependencies
 	apt install -f -y
@@ -352,8 +353,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# the key is shipped with the image and will not be unique
 	rm -f /etc/ssh/ssh_host_*
 
-	# Enable tmpfs on /tmp
-	systemctl enable /usr/share/systemd/tmp.mount
+	# Enable tmpfs on /tmp - enabled by default now
+	# systemctl enable /usr/share/systemd/tmp.mount
 
 	# Allow for better compression by NULLING all the free space on the drive
 	rm /tmp/install-script.sh
