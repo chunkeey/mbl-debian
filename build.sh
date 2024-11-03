@@ -95,7 +95,7 @@ DEBOOTSTRAP_INCLUDE_PACKAGES="gzip,u-boot-tools,device-tree-compiler,binutils,\
 # That's why the heavy lifting should be done by apt that will be run in the chroot
 APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	openssh-server netcat-traditional net-tools curl wget systemd-timesyncd \
-	smartmontools hdparm smartmontools cryptsetup \
+	smartmontools hdparm smartmontools cryptsetup psmisc \
 	nfs-common nfs-kernel-server rpcbind samba rsync telnet \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
 	bcache-tools duperemove \
@@ -341,6 +341,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# the /boot and /root (since we likely created these folders with the
 	# overlay.
 	chmod 0770 /boot /root
+
+	bash /root/install-cockpit-fileshare.sh || echo "Failed installing cockpit fileshare extension... Oh well..."
 
 	# cleanup
 	apt clean
