@@ -1,4 +1,4 @@
-From 43d22387a307764edb4c5fd7060a0956541bcd9b Mon Sep 17 00:00:00 2001
+From 41c36aea519a10914b54708e94dcc120ac488c47 Mon Sep 17 00:00:00 2001
 From: INAGAKI Hiroshi <musashino.open@gmail.com>
 Date: Mon, 13 Feb 2023 22:23:51 +0900
 Subject: [PATCH] nvmem: u-boot-env: align endianness of crc32 values
@@ -25,14 +25,14 @@ Fixes: f955dc144506 ("nvmem: add driver handling U-Boot environment variables")
 
 Signed-off-by: INAGAKI Hiroshi <musashino.open@gmail.com>
 ---
- drivers/nvmem/u-boot-env.c | 2 +-
+ drivers/nvmem/layouts/u-boot-env.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/nvmem/u-boot-env.c b/drivers/nvmem/u-boot-env.c
-index befbab156cda..f44a12f5cb01 100644
---- a/drivers/nvmem/u-boot-env.c
-+++ b/drivers/nvmem/u-boot-env.c
-@@ -182,7 +182,7 @@ static int u_boot_env_parse(struct u_boot_env *priv)
+diff --git a/drivers/nvmem/layouts/u-boot-env.c b/drivers/nvmem/layouts/u-boot-env.c
+index 731e6f4f12b2..c555049f9e29 100644
+--- a/drivers/nvmem/layouts/u-boot-env.c
++++ b/drivers/nvmem/layouts/u-boot-env.c
+@@ -149,7 +149,7 @@ int u_boot_env_parse(struct device *dev, struct nvmem_device *nvmem,
  	data_len = dev_size - data_offset;
  
  	calc = crc32(~0, buf + crc32_data_offset, crc32_data_len) ^ ~0L;
@@ -42,5 +42,5 @@ index befbab156cda..f44a12f5cb01 100644
  		err = -EINVAL;
  		goto err_kfree;
 -- 
-2.43.0
+2.45.2
 
