@@ -7,7 +7,7 @@ This project's build.sh generates an adapted Debian Sid/Unstable (As it still ha
 Big parts of this generator code has been adapted from the [npn2-debian](https://github.com/riptidewave93/npn2-debian) project.
 
 ## Requirements
-That you have a working and up-to-date Debian build (virtual) machine with 20GiB+ of free space and root access.
+That you have a working and up-to-date Debian Sid/Unstable build (virtual) machine with 20GiB+ of free space and root access.
 If this requirement have been met, you need to add the powerpc architecture with:
 
 `# dpkg --add-architecture powerpc`
@@ -22,7 +22,10 @@ And add the sid/unstable powerpc debian ports (sadly, that's the only one left) 
 
 Then you have to make sure your package index is up to date `# apt update` before installing the following packages on your Debian build host:
 
-`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python-dev python3-dev qemu qemu-user-static swig wget u-boot-tools gdisk fdisk kernel-package uuid-runtime c-compiler-powerpc-linux-gnu binutils-powerpc-linux-gnu libssl-dev:powerpc`
+`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python3-dev qemu-system qemu-user-static swig wget u-boot-tools gdisk fdisk kernel-package uuid-runtime gcc-powerpc-linux-gnu binutils-powerpc-linux-gnu libssl-dev:powerpc rsync zerofree ca-certificates `
+
+Because the image generation process relies on losetup+kpartx+friends making a docker/podman image proved to be tricky.
+Let me know if you know a solution.
 
 ## Build
 - Just run `sudo ./build.sh`.
