@@ -12,9 +12,17 @@ If this requirement have been met, you need to add the powerpc architecture with
 
 `# dpkg --add-architecture powerpc`
 
+Then make sure to install the keyring for the debian ports subproject:
+
+`# apt install debian-ports-archive-keyring`
+
+And add the sid/unstable powerpc debian ports (sadly, that's the only one left) to apt and update:
+
+`# echo "deb [arch=powerpc] http://deb.debian.org/debian-ports/ sid main contrib non-free non-free-firmware" > "/etc/apt/sources.list.d/powerpc-ports.list"`
+
 Then you have to make sure your package index is up to date `# apt update` before installing the following packages on your Debian build host:
 
-`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python-dev python3-dev qemu qemu-user-static swig wget u-boot-tools gdisk fdisk kernel-package uuid-runtime c-compiler-powerpc-linux-gnu binutils-powerpc-linux-gnu`
+`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python-dev python3-dev qemu qemu-user-static swig wget u-boot-tools gdisk fdisk kernel-package uuid-runtime c-compiler-powerpc-linux-gnu binutils-powerpc-linux-gnu libssl-dev:powerpc`
 
 ## Build
 - Just run `sudo ./build.sh`.
