@@ -257,7 +257,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 		iface lo inet loopback
 	NETOF
 
-	cat <<-NETOF > /etc/systemd/network/20-ether.link
+	cat <<-NETOF > /etc/systemd/network/20-ether.network
 		[Match]
 		Type=ether
 
