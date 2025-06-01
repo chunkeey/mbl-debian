@@ -43,7 +43,7 @@ diff --git a/arch/powerpc/platforms/44x/ppc44x_simple.c b/arch/powerpc/platforms
 index 3dbd8ddd734a..1122702c804a 100644
 --- a/arch/powerpc/platforms/44x/ppc44x_simple.c
 +++ b/arch/powerpc/platforms/44x/ppc44x_simple.c
-@@ -59,7 +59,8 @@ static char *board[] __initdata = {
+@@ -58,7 +58,8 @@ static char *board[] __initdata = {
  	"amcc,sequoia",
  	"amcc,taishan",
  	"amcc,yosemite",
