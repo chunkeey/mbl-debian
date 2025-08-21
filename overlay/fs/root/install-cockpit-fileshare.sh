@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FILESHAREVER="4.2.5"
-FILESHARESUB="-2focal"
+FILESHAREVER="4.3.0"
+FILESHARESUB="-1focal"
 FILESHAREURL="https://github.com/45Drives/cockpit-file-sharing/releases/download/v${FILESHAREVER}/cockpit-file-sharing_${FILESHAREVER}${FILESHARESUB}_all.deb"
 
 SMBIDENTVER="0.1.12"
