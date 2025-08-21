@@ -69,7 +69,7 @@ declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU_STATIC qemu-user-stati
 	"/usr/bin/powerpc-linux-gnu-ld binutils-powerpc-linux-gnu")
 
 for packaged in "${NEEDED[@]}"; do
-	set -- $packaged
+	set -- ${packaged}
 
 	[ -r "$1" ] || {
 		die "Can't find '$1'. Please install '$2'"
@@ -103,16 +103,13 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	cockpit cockpit-packagekit cockpit-networkmanager \
 	cockpit-storaged watchdog lm-sensors uuid-runtime rng-tools-debian"
 
-DTS_DIR=dts
-LINUX_DIR=linux
-
 # Cleanup
 
 [ -d "$TARGET" ] && {
 	/bin/umount -f -l "$TARGET" || echo "Image was already mounted - unmounting"
 }
 [ -r "$IMAGE" ] && {
-	$KPARTX -d "$IMAGE" || echo "Image was already loaded - cleaning"
+	"${KPARTX}" -d "$IMAGE" || echo "Image was already loaded - cleaning"
 }
 /sbin/losetup -D
 rm -rf "$TARGET" "$IMAGE"
@@ -150,11 +147,11 @@ trap "/bin/umount -A -R -l $TARGET || echo unmounted; $KPARTX -d $IMAGE || echo 
 	y
 GPTEOF
 
-DEVICE=$(/sbin/losetup -f --show "$IMAGE")
+DEVICE="$(/sbin/losetup -f --show "${IMAGE}")"
 
 $PARTPROBE
 
-DEVICE=$($KPARTX -vas "$IMAGE" | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1)
+DEVICE=$("${KPARTX}" -vas "${IMAGE}" | sed -E 's/.*(loop[0-9])p.*/\1/g' | head -1)
 sleep 1
 
 DEVICE="/dev/mapper/${DEVICE}"
@@ -167,46 +164,46 @@ ROOTP="${DEVICE}p${ROOTPARTNO}"
 # Make filesystems
 
 # Boot ext2 Filesystem - revision 1 is needed because of u-boot ext2load
-/sbin/mkfs.ext2 "$BOOTP" -O filetype -L "$BOOTPARTNAME" -m 0 -U $BOOTUUID -b 1024
+/sbin/mkfs.ext2 "${BOOTP}" -O filetype -L "${BOOTPARTNAME}" -m 0 -U "${BOOTUUID}" -b 1024
 # Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
-/sbin/resize2fs "$BOOTP" $(( $BOOTSIZE / 1024 - 128 ))
+/sbin/resize2fs "${BOOTP}" $(( BOOTSIZE / 1024 - 128 ))
 
 # Root Filesystem - ext4 is specified in rootfstype= kernel cmdline
-/sbin/mkfs.ext4 "$ROOTP" -L "$ROOTPARTNAME" -U $ROOTUUID -b 4096
+/sbin/mkfs.ext4 "${ROOTP}" -L "${ROOTPARTNAME}" -U "${ROOTUUID}" -b 4096
 # Reserve space at the end for an mdadm RAID 0.9 or 1.0 superblock
-/sbin/resize2fs "$ROOTP" $(( $ROOTSIZE / 4096 - 32 ))
+/sbin/resize2fs "${ROOTP}" $(( ROOTSIZE / 4096 - 32 ))
 
-mkdir -p "$TARGET"
+mkdir -p "${TARGET}"
 
-mount "$ROOTP" "$TARGET" -t ext4
+mount "${ROOTP}" "${TARGET}" -t ext4
 
 # create swapfile - it's still up to debate whenever fallocate or dd is better
-dd if=/dev/zero of="$TARGET/.swapfile" bs=1M count="$SWAPFILESIZE"
-chmod 0600 "$TARGET/.swapfile"
+dd if=/dev/zero of="${TARGET}/.swapfile" bs=1M count="${SWAPFILESIZE}"
+chmod 0600 "${TARGET}/.swapfile"
 
 #prepare boot
-mkdir -p "$TARGET/boot"
-mount "$BOOTP" "$TARGET/boot" -t ext2
-mkdir -p "$TARGET/boot/boot"
-cp dts/wd-mybooklive.dtb "$TARGET/boot/apollo3g.dtb"
-cp dts/wd-mybooklive.dtb.tmp "$TARGET/boot/apollo3g.dts"
+mkdir -p "${TARGET}/boot"
+mount "${BOOTP}" "${TARGET}/boot" -t ext2
+mkdir -p "${TARGET}/boot/boot"
+cp dts/wd-mybooklive.dtb "${TARGET}/boot/apollo3g.dtb"
+cp dts/wd-mybooklive.dtb.tmp "${TARGET}/boot/apollo3g.dts"
 
-ROOTBOOT="UUID=$ROOTUUID"
+ROOTBOOT="UUID=${ROOTUUID}"
 
-echo "$ROOTBOOT" > "$TARGET/boot/boot/root-device"
+echo "${ROOTBOOT}" > "${TARGET}/boot/boot/root-device"
 
 # debootstrap needs chroot available in PATH. This is for "root" but not necessarily for sudo...
 source /etc/profile
-$DEBOOTSTRAP --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
+"${DEBOOTSTRAP}" --no-check-gpg --foreign --include="$DEBOOTSTRAP_INCLUDE_PACKAGES" --exclude="powerpc-utils" --arch "$ARCH" "$RELEASE" "$TARGET" "$SOURCE"
 
-mkdir -p "$TARGET/usr/bin"
-cp "$QEMU_STATIC" "$TARGET"/usr/bin/
+mkdir -p "${TARGET}/usr/bin"
+cp "${QEMU_STATIC}" "${TARGET}"/usr/bin/
 
-LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /debootstrap/debootstrap --second-stage
+LANG=C.UTF-8 /usr/sbin/chroot "${TARGET}" /debootstrap/debootstrap --second-stage
 
-if [[ -d $OURPATH/overlay/fs ]]; then
+if [[ -d "$OURPATH/overlay/fs" ]]; then
 	echo "Applying fs overlay"
-	cp -vR $OURPATH/overlay/fs/* "$TARGET"
+	cp -vR "$OURPATH/overlay/fs/"* "$TARGET"
 fi
 
 mv linux-*.deb "$TARGET/tmp"
@@ -216,7 +213,7 @@ if [[ $(ls fix-missing-ports/*.deb 2> /dev/null) ]]; then
 fi
 rm linux-upstream*
 
-mkdir -p "$TARGET/dev/mapper"
+mkdir -p "${TARGET}/dev/mapper"
 
 cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	#!/bin/bash -e
@@ -228,9 +225,21 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	source /etc/profile
 
 	#apt
-	cat <<-SOURCESEOF > /etc/apt/sources.list
-	deb $SOURCE $RELEASE main contrib non-free non-free-firmware
-	deb-src $SOURCE_SRC $RELEASE main contrib non-free non-free-firmware
+	mkdir -p /etc/apt/sources.list.d/
+	cat <<-SOURCESEOF > /etc/apt/sources.list.d/debian.sources
+		Types: deb-src
+		URIs: ${SOURCE_SRC}
+		Suites: ${RELEASE}
+		Components: main contrib non-free non-free-firmware
+		Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+	SOURCESEOF
+
+	cat <<-SOURCESEOF > /etc/apt/sources.list.d/debian-ports.sources
+		Types: deb
+		URIs: ${SOURCE}
+		Suites: ${RELEASE}
+		Components: main contrib non-free non-free-firmware
+		Signed-By: /usr/share/keyrings/debian-ports-archive-keyring.gpg
 	SOURCESEOF
 
 	# fstab
@@ -242,8 +251,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 		none		/var/log	tmpfs	size=30M,mode=755,gid=0,uid=0	0	0
 	FSTABEOF
 
-	echo "$TARGET" > etc/hostname
-	echo "127.0.1.1	$TARGET" >> /etc/host
+	echo "${TARGET}" > etc/hostname
+	echo "127.0.1.1	${TARGET}" >> /etc/host
 
 	# Networking
 	cat <<-NETOF > /etc/network/interfaces
@@ -281,7 +290,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	/usr/sbin/locale-gen
 	# Set root password...
-	echo "root:$ROOT_PASSWORD" | /usr/sbin/chpasswd
+	echo "root:${ROOT_PASSWORD}" | /usr/sbin/chpasswd
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
 
@@ -374,10 +383,10 @@ sleep 2
 
 [[ $MAKE_RAID ]] && {
 	# super 1.0 is between 8k and 12k
-	dd if=boot-md0-raid1 of="$BOOTP" bs=1K seek=$(( $BOOTSIZE / 1024 - 8 )) status=noxfer
+	dd if=boot-md0-raid1 of="$BOOTP" bs=1K seek=$(( BOOTSIZE / 1024 - 8 )) status=noxfer
 
 	# super 0.9 is at 64K
-	dd if=root-md1-raid1 of="$ROOTP" bs=1k seek=$(( $ROOTSIZE / 1024 - 64)) status=noxfer
+	dd if=root-md1-raid1 of="$ROOTP" bs=1k seek=$(( ROOTSIZE / 1024 - 64)) status=noxfer
 }
 
 $KPARTX -d "$IMAGE"

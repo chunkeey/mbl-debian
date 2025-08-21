@@ -3,18 +3,14 @@
 set -e
 
 ARCH=powerpc
-RELEASE=unstable
-TARGET=mbl-debian
-DISTRIBUTION=Debian
 PARALLEL=$(getconf _NPROCESSORS_ONLN)
-REV=1.00
 
 DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
 LINUX_VER=${1:-v6.17-rc2}
-LINUX_SV="$(echo $LINUX_VER | cut -d. -f-2)"
+LINUX_SV="$(echo "${LINUX_VER}" | cut -d. -f-2)"
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
 LINUX_LOCAL="cached-linux"
@@ -45,14 +41,14 @@ if [[ -d "$OURPATH/overlay/kernel-${LINUX_SV}/" ]]; then
 fi
 
 if [[ -d "$OURPATH/patches/kernel/" ]]; then
-	for file in $OURPATH/patches/kernel/*.patch; do
+	for file in "$OURPATH/patches/kernel/"*.patch; do
 		echo "Applying kernel patch $file"
 		( cd "$LINUX_DIR"; git am "$file" )
 	done
 fi
 
 if [[ -d "$OURPATH/patches/kernel-${LINUX_SV}/" ]]; then
-	for file in $OURPATH/patches/kernel-${LINUX_SV}/*.patch; do
+	for file in "$OURPATH/patches/kernel-${LINUX_SV}/"*.patch; do
 		echo "Applying kernel patch $file"
 		( cd "$LINUX_DIR"; git am "$file" )
 	done
@@ -72,4 +68,4 @@ dtc -O dtb -i "$DTS_DIR" -S 32768 -o "$DTB_MBL" "$DTB_MBL.tmp"
 #make deb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #make bindeb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #
-(cd "$LINUX_DIR"; make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j${PARALLEL} )
+(cd "$LINUX_DIR"; make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" )
