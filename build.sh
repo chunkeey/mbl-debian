@@ -15,7 +15,7 @@ TARGET=mbl-debian
 SOURCE=http://ftp.ports.debian.org/debian-ports
 SOURCE_SRC=http://ftp.debian.org/debian
 
-QEMU_STATIC=/usr/bin/qemu-ppc-static
+QEMU=/usr/bin/qemu-ppc
 MKIMAGE=/usr/bin/mkimage
 DTC=/usr/bin/dtc
 KPARTX=/sbin/kpartx
@@ -60,7 +60,7 @@ to_k()
 echo "Building Image '$IMAGE'"
 
 # Test if all the required tool are installed
-declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU_STATIC qemu-user-static" "$MKIMAGE u-boot-tools"
+declare -a NEEDED=("/usr/bin/uuidgen uuid-runtime" "$QEMU qemu-user" "$MKIMAGE u-boot-tools"
 	"$DTC device-tree-compiler" "$KPARTX kpartx" "$PARTPROBE parted"
 	"$DEBOOTSTRAP debootstrap" "/usr/bin/git git" "/bin/mount mount" "/usr/bin/rsync rsync"
 	"/sbin/gdisk gdisk" "/sbin/fdisk fdisk" "/usr/sbin/chroot coreutils"
