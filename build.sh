@@ -321,11 +321,11 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	if [ -d /tmp/fix ]; then
 		find /tmp/fix -name "*.deb" -exec echo '{}' \;
-		find /tmp/fix -name "*.deb" -exec apt install -y '{}' \;
+		find /tmp/fix -name "*.deb" -exec apt install --allow-downgrades -y '{}' \;
 	fi
 
 	# install kernel image (mostly for the modules)
-	find /tmp -name "linux-*deb" -exec apt install -y '{}' \;
+	find /tmp -name "linux-*deb" -exec apt install -y --allow-downgrades '{}' \;
 
 	# First, try to fix bad packages dependencies
 	apt install -f -y
