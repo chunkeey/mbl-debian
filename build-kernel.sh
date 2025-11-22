@@ -9,7 +9,7 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=dts/wd-mybooklive.dtb
 LINUX_DIR=linux
-LINUX_VER=${1:-v6.17-rc4}
+LINUX_VER=${1:-v6.18-rc6}
 LINUX_SV="$(echo "${LINUX_VER}" | cut -d. -f-2)"
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
@@ -68,4 +68,4 @@ dtc -O dtb -i "$DTS_DIR" -S 32768 -o "$DTB_MBL" "$DTB_MBL.tmp"
 #make deb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #make bindeb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #
-(cd "$LINUX_DIR"; make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" )
+(cd "$LINUX_DIR"; DPKG_DEB_COMPRESSOR_TYPE=zstd make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" )
