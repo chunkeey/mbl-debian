@@ -100,8 +100,11 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
 	bcache-tools duperemove \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
-	cockpit cockpit-packagekit cockpit-networkmanager \
-	cockpit-storaged watchdog lm-sensors uuid-runtime rng-tools-debian"
+	watchdog lm-sensors uuid-runtime rng-tools-debian"
+
+#	Doesn't currently work due to nodejs not being available on PowerPC
+#	cockpit cockpit-packagekit cockpit-networkmanager cockpit-storaged
+
 
 # Cleanup
 
@@ -336,7 +339,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 
 	# Make it possible to login to cockpit as root... by deleting the "root" user by overwriting that file
-	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
+#	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
 
 	# Configure first_boot
 	update-rc.d first_boot defaults
@@ -351,7 +354,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	# overlay.
 	chmod 0770 /boot /root
 
-	bash /root/install-cockpit-fileshare.sh || echo "Failed installing cockpit fileshare extension... Oh well..."
+#	bash /root/install-cockpit-fileshare.sh || echo "Failed installing cockpit fileshare extension... Oh well..."
 
 	# cleanup
 	apt clean

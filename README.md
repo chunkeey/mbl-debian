@@ -124,8 +124,8 @@ This removes all usb boot scripts/commands and restores the previous boot-order.
 
 ## Usage
 
-For access and administration, the image comes preinstalled with the [cockpit](https://cockpit-project.org/) web interface at [https://mbl-debian](https://mbl-debian).
-SSH access is also available. Though, caution should be exercised. Because to make the first login possible when no serial cable has been attached, SSH will allow
+For access and administration, the image comes preinstalled with SSH access.
+Though, caution should be exercised. Because to make the first login possible when no serial cable has been attached, SSH will allow
 password login for root, when no authorized_keys file is placed in `/root/.ssh/`.
 
 ## Notes
