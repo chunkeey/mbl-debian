@@ -1,0 +1,43 @@
+#!/bin/bash
+
+# Generate SSH keys & enable SSH
+[[ -f /etc/ssh/ssh_host_rsa_key ]] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_rsa_key -t rsa -N ""
+[[ -f /etc/ssh/ssh_host_ed25519_key ]] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ed25519_key -t ed25519 -N ""
+[[ -f /etc/ssh/ssh_host_ecdsa_key ]] || /usr/bin/ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -t ecdsa -N ""
+
+[[ -f /etc/dropbear/dropbear_rsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_rsa_host_key -t rsa -N ""
+[[ -f /etc/dropbear/dropbear_ecdsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_ecdsa_host_key -t ecdsa -N ""
+[[ -f /etc/dropbear/dropbear_ed25519_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear/dropbear_ed25519_host_key -t ed25519 -N ""
+
+[[ -f /etc/dropbear-initramfs/dropbear_rsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_rsa_host_key -t rsa -N ""
+[[ -f /etc/dropbear-initramfs/dropbear_ecdsa_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_ecdsa_host_key -t ecdsa -N ""
+[[ -f /etc/dropbear-initramfs/dropbear_ed25519_host_key ]] || /usr/bin/ssh-keygen -f /etc/dropbear-initramfs/dropbear_ed25519_host_key -t ed25519 -N ""
+
+systemctl enable --now ssh.service
+
+echo -e "w\nq" | /sbin/fdisk /dev/sda
+
+/sbin/mkswap /.swapfile
+/sbin/swapon /.swapfile
+
+cat << SWAPENTRY >> /etc/fstab
+/.swapfile      none            swap    sw                              0       0
+SWAPENTRY
+
+# Spin-down HDDs after 10 Minutes + 15 Seconds
+cat << HDPARMENTRY >> /etc/hdparm.conf
+/dev/sda {
+	spindown_time = 123
+}
+
+/dev/sdb {
+	spindown_time = 123
+}
+HDPARMENTRY
+
+update-initramfs -u
+
+systemctl disable first_boot.service
+systemctl daemon-reload
+
+rm -f "$0"

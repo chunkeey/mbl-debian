@@ -1,0 +1,12 @@
+[Unit]
+Description=Generates new ssh host keys on first boot & makes swap: command not found
+After=local-fs.target
+After=network.target
+
+[Service]
+ExecStart=/root/first_boot
+RemainAfterExit=true
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

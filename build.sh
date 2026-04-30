@@ -340,8 +340,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 #	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
 
 	# Configure first_boot
-	update-rc.d first_boot defaults
-	update-rc.d first_boot enable
+	systemctl disable ssh.service
+	systemctl enable /etc/systemd/system/first_boot.service
 
 	# ... but make it so, that root has to change it on the first login
 	# (This hopefully unbreaks dnsmasq install)
