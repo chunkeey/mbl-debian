@@ -295,15 +295,6 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	echo 'RAMTMP=yes' >> /etc/default/tmpfs
 	rm -f /etc/udev/rules.d/70-persistent-net.rules
 
-	mkdir -p /etc/systemd/system/cockpit.socket.d/
-	cat <<-CPLISTEN > /etc/systemd/system/cockpit.socket.d/listen.conf
-	[Socket]
-	ListenStream=
-	ListenStream=80
-	ListenStream=443
-	ListenStream=9090
-	CPLISTEN
-
 	cat <<-FWCONF > /etc/fw_env.config
 	# MTD device name	Device offset	Env. size	Flash sector size	Number of sectors
 	/dev/mtd1		0x0000		0x1000		0x1000			1
@@ -333,11 +324,23 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 
 	apt install -y $APT_INSTALL_PACKAGES
 
+	# Allow root to login
+	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
+
 	# If a root-keyfile is already in place. Don't change the SSH Default password setting for root
 	[[ -f /root/.ssh/authorized_keys ]] || sed -i 's|#PermitRootLogin prohibit-password|PermitRootLogin yes|g' /etc/ssh/sshd_config
 
+	mkdir -p /etc/systemd/system/cockpit.socket.d/
+	cat <<-CPLISTEN > /etc/systemd/system/cockpit.socket.d/listen.conf
+	[Socket]
+	ListenStream=
+	ListenStream=80
+	ListenStream=443
+	ListenStream=9090
+	CPLISTEN
+
 	# Make it possible to login to cockpit as root... by deleting the "root" user by overwriting that file
-#	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
+	echo "# List of users which are not allowed to login to Cockpit" > /etc/cockpit/disallowed-users
 
 	# Configure first_boot
 	systemctl disable ssh.service
