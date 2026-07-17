@@ -377,6 +377,8 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 INSTALLEOF
 
 chmod a+x "$TARGET/tmp/install-script.sh"
+mkdir -p "$TARGET/proc"
+/bin/mount -t proc none "$TARGET/proc"
 LANG=C.UTF-8 /usr/sbin/chroot "$TARGET" /tmp/install-script.sh
 
 sleep 2
