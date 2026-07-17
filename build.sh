@@ -45,7 +45,7 @@ IMAGE="$DISTRIBUTION-$ARCH-$RELEASE-$MBLBRANCH-$DATE.img"
 # big endian) encoding....
 # But we are building on x86/ARM with little endian so we,
 # can't use the established mdadm to make the RAID.
-MAKE_RAID=
+MAKE_RAID=1
 
 die() {
 	(>&2 echo "$@")
@@ -97,12 +97,13 @@ APT_INSTALL_PACKAGES="needrestart zip unzip vim screen htop ethtool iperf3 \
 	openssh-server netcat-traditional net-tools curl wget systemd-timesyncd \
 	smartmontools hdparm cryptsetup psmisc \
 	nfs-common nfs-kernel-server rpcbind samba rsync \
-	btrfs-progs xfsprogs exfatprogs ntfs-3g dosfstools \
+	btrfs-progs xfsprogs ntfs-3g dosfstools \
 	duperemove \
 	cockpit cockpit-packagekit cockpit-networkmanager cockpit-storaged \
 	udisks2 udisks2-btrfs udisks2-lvm2 unattended-upgrades \
 	watchdog lm-sensors uuid-runtime rng-tools-debian"
 
+# exfatprogs - put it back once it no longer breaks
 
 # Cleanup
 
