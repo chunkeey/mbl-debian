@@ -1,6 +1,6 @@
-From 0bd955af1c20227ca7e6e14a61d6aaa2cd4588e0 Mon Sep 17 00:00:00 2001
+From 1fbad0c01ea1570272f868e7ed34e9b35483d6cc Mon Sep 17 00:00:00 2001
 From: Christian Lamparter <chunkeey@gmail.com>
-Date: Thu, 16 Sep 2026 22:22:22 +0200
+Date: Wed, 16 Sep 2026 22:22:22 +0200
 Subject: [PATCH] net: emac: move setting of netops to fix crash
 
 fixes the following crash on driver initialization:
@@ -44,22 +44,34 @@ phy_link_topo_add_phy() is a netdev_need_ops_lock() check.
 This was added by the following
 commit ded86da4bbb7 ("net: ethtool: relax ethnl_req_get_phydev() locking assertion")
 
-The bug shows up because at the time of_phy_connect was called, the
-netdev_ops were *not yet* set. My fix is to move the code that sets
-netdev_ops further up as emac_init_config() does the detection/looks
-at OF and sets the required phy_mode in order to choose correctly.
+The bug shows up because at the time of_phy_connect() was called, the
+netdev_ops were *not yet* determined. My fix is to move the code that
+sets netdev_ops+ethtool_ops further up as emac_init_config() derives
+that by looking at the device-tree and sets the required dev->phy_mode
+accordingly.
+
+During review, the Sashiko AI found that the commac assignment became
+a dead store. Great catch! To keep the original behavior as-is, I also
+moved the dev->commac.ops for fast-ethernet into the else block.
+
+This patch was tested on a WD MyBook Live. the device now works again.
 
 Fixes: ded86da4bbb7 ("net: ethtool: relax ethnl_req_get_phydev() locking assertion")
 Signed-off-by: Christian Lamparter <chunkeey@gmail.com>
+
 ---
- drivers/net/ethernet/ibm/emac/core.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+
+v1 -> v2:
+    also moved up commac assignment, this restores the previous state.
+---
+ drivers/net/ethernet/ibm/emac/core.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
-index 1d46cf6c2c12..d20f80086328 100644
+index 1d46cf6c2c12..e7043523457c 100644
 --- a/drivers/net/ethernet/ibm/emac/core.c
 +++ b/drivers/net/ethernet/ibm/emac/core.c
-@@ -3044,6 +3044,14 @@ static int emac_probe(struct platform_device *ofdev)
+@@ -3044,6 +3044,15 @@ static int emac_probe(struct platform_device *ofdev)
  	if (err)
  		goto err_gone;
  
@@ -68,13 +80,22 @@ index 1d46cf6c2c12..d20f80086328 100644
 +		dev->commac.ops = &emac_commac_sg_ops;
 +	} else {
 +		ndev->netdev_ops = &emac_netdev_ops;
++		dev->commac.ops = &emac_commac_ops;
 +	}
 +	ndev->ethtool_ops = &emac_ethtool_ops;
 +
  	dev->emacp = devm_platform_ioremap_resource(ofdev, 0);
  	if (IS_ERR(dev->emacp)) {
  		err = PTR_ERR(dev->emacp);
-@@ -3144,12 +3151,6 @@ static int emac_probe(struct platform_device *ofdev)
+@@ -3076,7 +3085,6 @@ static int emac_probe(struct platform_device *ofdev)
+ 		dev->mdio_instance = platform_get_drvdata(dev->mdio_dev);
+ 
+ 	/* Register with MAL */
+-	dev->commac.ops = &emac_commac_ops;
+ 	dev->commac.dev = dev;
+ 	dev->commac.tx_chan_mask = MAL_CHAN_MASK(dev->mal_tx_chan);
+ 	dev->commac.rx_chan_mask = MAL_CHAN_MASK(dev->mal_rx_chan);
+@@ -3144,12 +3152,6 @@ static int emac_probe(struct platform_device *ofdev)
  		ndev->features |= ndev->hw_features | NETIF_F_RXCSUM;
  	}
  	ndev->watchdog_timeo = 5 * HZ;
