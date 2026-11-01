@@ -101,13 +101,3 @@ EOF
 equivs-build --arch=powerpc linux-image-mbl.equivs
 
 mv *.deb ..
-
-exit 0
-
-cd "$LINUX_DIR"
-cd ..
-
-# Generate Dynamic Linux Headers and Image Meta-Packages using ${REAL_KERNEL_VER} via equivs
-# (See reference for full build script implementation)
-mv *.deb ..
-
