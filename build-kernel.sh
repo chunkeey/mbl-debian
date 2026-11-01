@@ -12,7 +12,6 @@ DTB_MBL=build/wd-mybooklive.dtb
 LINUX_DIR=build/linux
 LINUX_VER=${1:-v7.3}
 LINUX_SV="$(echo "${LINUX_VER}" | cut -d. -f-2)"
-LINUX_NV="${LINUX_SV#v}"
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
 LINUX_LOCAL="cached-linux"
@@ -70,9 +69,11 @@ dtc -O dtb -i "$DTS_DIR" -S 32768 -o "$DTB_MBL" "$DTB_MBL.tmp"
 #make deb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #make bindeb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #
-(cd "$LINUX_DIR"; DPKG_DEB_COMPRESSOR_TYPE=zstd make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" LOCALVERSION=-mbl )
-
-cd "$LINUX_DIR"/..
+cd "$LINUX_DIR"/
+DPKG_DEB_COMPRESSOR_TYPE=zstd make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" LOCALVERSION=-mbl 
+# Get Real Kernel Version
+LINUX_NV=$(make -s ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- LOCALVERSION=-mbl kernelrelease)
+cd ..
 
 cat << EOF > linux-headers-mbl.equivs
 Section: kernel
@@ -100,3 +101,13 @@ EOF
 equivs-build --arch=powerpc linux-image-mbl.equivs
 
 mv *.deb ..
+
+exit 0
+
+cd "$LINUX_DIR"
+cd ..
+
+# Generate Dynamic Linux Headers and Image Meta-Packages using ${REAL_KERNEL_VER} via equivs
+# (See reference for full build script implementation)
+mv *.deb ..
+
