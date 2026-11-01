@@ -81,7 +81,7 @@ Priority: optional
 Package: linux-headers-mbl
 Version: $LINUX_NV
 Architecture: powerpc
-Depends: linux-headers-${LINUX_NV}-mbl
+Depends: linux-headers-${LINUX_NV}
 Description: Linux kernel headers for $LINUX_VER on powerpc
  This package provides kernel header files for $LINUX_VER on powerpc
 EOF
@@ -93,7 +93,7 @@ Priority: optional
 Package: linux-image-mbl
 Version: $LINUX_NV
 Architecture: powerpc
-Depends: linux-image-${LINUX_NV}-mbl
+Depends: linux-image-${LINUX_NV}
 Description: Linux kernel, $LINUX_VER on powerpc
  This package contains the Linux kernel, modules and corresponding other
  files, version: ${LINUX_VER}.
