@@ -2,3 +2,4 @@
 *.bak
 cached-linux/
 build/
+/tmp/

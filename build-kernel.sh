@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -x
 
 ARCH=powerpc
 PARALLEL=$(getconf _NPROCESSORS_ONLN)
@@ -9,8 +10,9 @@ DTS_DIR=dts
 DTS_MBL=dts/wd-mybooklive.dts
 DTB_MBL=build/wd-mybooklive.dtb
 LINUX_DIR=build/linux
-LINUX_VER=${1:-v7.3-rc4}
+LINUX_VER=${1:-v7.3}
 LINUX_SV="$(echo "${LINUX_VER}" | cut -d. -f-2)"
+LINUX_NV="${LINUX_SV#v}"
 
 # This "cached-linux" serves as a local cache for a unmodified linux.git
 LINUX_LOCAL="cached-linux"
@@ -68,4 +70,33 @@ dtc -O dtb -i "$DTS_DIR" -S 32768 -o "$DTB_MBL" "$DTB_MBL.tmp"
 #make deb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #make bindeb-pkg ARCH=powerpc CROSS_COMPILE=powerpc-linux-gnu- -j8
 #
-(cd "$LINUX_DIR"; DPKG_DEB_COMPRESSOR_TYPE=zstd make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" )
+(cd "$LINUX_DIR"; DPKG_DEB_COMPRESSOR_TYPE=zstd make deb-pkg ARCH="$ARCH" CROSS_COMPILE=powerpc-linux-gnu- -j"${PARALLEL}" LOCALVERSION=-mbl )
+
+cd "$LINUX_DIR"/..
+
+cat << EOF > linux-headers-mbl.equivs
+Section: kernel
+Priority: optional
+Package: linux-headers-mbl
+Version: $LINUX_NV
+Architecture: powerpc
+Depends: linux-headers-${LINUX_NV}-mbl
+Description: Linux kernel headers for $LINUX_VER on powerpc
+ This package provides kernel header files for $LINUX_VER on powerpc
+EOF
+equivs-build --arch=powerpc linux-headers-mbl.equivs
+
+cat << EOF > linux-image-mbl.equivs
+Section: kernel
+Priority: optional
+Package: linux-image-mbl
+Version: $LINUX_NV
+Architecture: powerpc
+Depends: linux-image-${LINUX_NV}-mbl
+Description: Linux kernel, $LINUX_VER on powerpc
+ This package contains the Linux kernel, modules and corresponding other
+ files, version: ${LINUX_VER}.
+EOF
+equivs-build --arch=powerpc linux-image-mbl.equivs
+
+mv *.deb ..

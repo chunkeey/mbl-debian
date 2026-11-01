@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # set -xe
+set -x
 
 OURPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -253,7 +254,7 @@ cat <<-INSTALLEOF > "$TARGET/tmp/install-script.sh"
 	FSTABEOF
 
 	echo "${TARGET}" > etc/hostname
-	echo "127.0.1.1	${TARGET}" >> /etc/host
+	echo "127.0.1.1	${TARGET}" >> /etc/hosts
 
 	# Networking
 	cat <<-NETOF > /etc/network/interfaces

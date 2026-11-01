@@ -22,7 +22,7 @@ And add the sid/unstable powerpc debian ports (sadly, that's the only one left) 
 
 Then you have to make sure your package index is up to date `# apt update` before installing the following packages on your Debian build host:
 
-`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools fakeroot git kpartx lvm2 parted python3-dev qemu-system qemu-user-static swig wget u-boot-tools gdisk fdisk kernel-package uuid-runtime gcc-powerpc-linux-gnu binutils-powerpc-linux-gnu libssl-dev:powerpc rsync zerofree ca-certificates `
+`# apt install bc binfmt-support build-essential debootstrap device-tree-compiler dosfstools equivs fakeroot git kpartx lvm2 parted python3-dev qemu-system swig wget u-boot-tools gdisk fdisk uuid-runtime gcc-powerpc-linux-gnu binutils-powerpc-linux-gnu libdw-dev libssl-dev libssl-dev:powerpc rsync zerofree ca-certificates `
 
 Because the image generation process relies on losetup+kpartx+friends making a docker/podman image proved to be tricky.
 Let me know if you know a solution.
